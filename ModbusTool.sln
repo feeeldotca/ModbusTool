@@ -5,6 +5,8 @@ VisualStudioVersion = 17.3.32804.467
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModbusTool", "ModbusTool\ModbusTool.csproj", "{11E156A9-F390-4E5E-A3A8-FFA39DBFCE4A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DAL", "DAL\DAL.csproj", "{294D0171-0758-4101-8FB2-5B13ADDB05FD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{11E156A9-F390-4E5E-A3A8-FFA39DBFCE4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11E156A9-F390-4E5E-A3A8-FFA39DBFCE4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11E156A9-F390-4E5E-A3A8-FFA39DBFCE4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{294D0171-0758-4101-8FB2-5B13ADDB05FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{294D0171-0758-4101-8FB2-5B13ADDB05FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{294D0171-0758-4101-8FB2-5B13ADDB05FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{294D0171-0758-4101-8FB2-5B13ADDB05FD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
