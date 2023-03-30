@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -50,7 +51,7 @@ namespace DAL
         }
 
         // close serial port 
-        public void CloseMyCome()
+        public void CloseMyCom()
         {
             if (myCom.IsOpen)
             {
@@ -59,7 +60,7 @@ namespace DAL
         }
 
         // Read Output Coil status
-        public bool ReadOutputCoil(int iDevAdd, int iAddress, int iLength)
+        public byte[] ReadOutputCoil(int iDevAdd, int iAddress, int iLength)
         {
             // prepare data to be sent to output coil address
             byte[] SendCmd = new byte[8];
@@ -74,14 +75,59 @@ namespace DAL
             SendCmd[7] = crc[1];
             byte[] Response = new byte[1024];
             // send command data to coil address and get response data
-            SendData(SendCmd, ref Response);
+            int byteLength = 0;
+            if(iLength % 8 == 0)
+            {
+                byteLength = iLength / 8;
+            }
+            else
+            {
+                byteLength = iLength / 8 + 1;
+            }
 
-
-            return false;
+            byte[] response = new byte[byteLength + 5];
+            if(SendData(SendCmd, ref response))
+            {
+                // analyse response data
+                return GetByteArray(response, 3, byteLength);
+            }
+            else
+            {
+                return null;
+            }
+                       
         }
+
+        private byte[] GetByteArray(byte[] dest, int offset, int count)
+        {
+            byte[] res = new byte[count];
+            if(dest != null && dest.Length >= offset + count)
+            {
+                for(int i = 0; i<count; i++)
+                {
+                    res[i] = dest[offset + i];
+                }
+                return res;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         // step 1. Send command to coil address
         private bool SendData(byte[] cmd, ref byte[] res)
         {
+            // Send command to coil address
+            
+            try{
+                if (cmd.Length > 0)
+                myCom.Write(cmd, 0, cmd.Length);
+            }
+            catch
+            {
+                return false;
+            }
             // prepare momery to store response data
             MemoryStream ms = new MemoryStream();
 
@@ -91,9 +137,6 @@ namespace DAL
             // get the start time for reading response
             DateTime start = DateTime.Now;
 
-            // Send command to coil address
-            if (cmd.Length > 0)
-                myCom.Write(cmd, 0, cmd.Length);
 
             // read response data from buffer
             // step 1: get the value of current buffer size, if yes then read it and write to memory
@@ -106,12 +149,26 @@ namespace DAL
                 if (myCom.BytesToRead >= 1)
                 {
                     int spCount = myCom.Read(buffer, 0, buffer.Length);
+                    ms.Write(buffer, 0, spCount);
+                }
+                else
+                {
+                    // time out?
+                    if ((DateTime.Now - start).TotalMilliseconds > this.ReadTimeOut)
+                    {
+                        ms.Dispose();
+                        return false;
+                    }
+                    else if(ms.Length>0)
+                    break;
                 }
 
             }
 
+            res = ms.ToArray();
+            ms.Dispose();
 
-
+            return true;
         }
 
 
