@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.tbDatabits = new System.Windows.Forms.TextBox();
             this.btnDisconnect = new System.Windows.Forms.Button();
             this.btnConnect = new System.Windows.Forms.Button();
             this.cmb_Parity = new System.Windows.Forms.ComboBox();
@@ -43,6 +44,10 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.lbListBox = new System.Windows.Forms.Label();
+            this.tbRWLength = new System.Windows.Forms.TextBox();
+            this.tbStartAddress = new System.Windows.Forms.TextBox();
+            this.tbSlaveAddress = new System.Windows.Forms.TextBox();
             this.lst_Info = new System.Windows.Forms.ListView();
             this.tbWriteValue = new System.Windows.Forms.TextBox();
             this.label9 = new System.Windows.Forms.Label();
@@ -55,11 +60,6 @@
             this.label11 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
-            this.tbDatabits = new System.Windows.Forms.TextBox();
-            this.tbSlaveAddress = new System.Windows.Forms.TextBox();
-            this.tbStartAddress = new System.Windows.Forms.TextBox();
-            this.tbRWLength = new System.Windows.Forms.TextBox();
-            this.lbListBox = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -87,6 +87,15 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Com Parameters";
             // 
+            // tbDatabits
+            // 
+            this.tbDatabits.Location = new System.Drawing.Point(913, 37);
+            this.tbDatabits.Name = "tbDatabits";
+            this.tbDatabits.Size = new System.Drawing.Size(100, 31);
+            this.tbDatabits.TabIndex = 3;
+            this.tbDatabits.Text = "8";
+            this.tbDatabits.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
             // btnDisconnect
             // 
             this.btnDisconnect.Location = new System.Drawing.Point(861, 89);
@@ -104,6 +113,7 @@
             this.btnConnect.TabIndex = 2;
             this.btnConnect.Text = "Connect";
             this.btnConnect.UseVisualStyleBackColor = true;
+            this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
             // 
             // cmb_Parity
             // 
@@ -224,6 +234,42 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Read/Write Test";
             // 
+            // lbListBox
+            // 
+            this.lbListBox.AutoSize = true;
+            this.lbListBox.Location = new System.Drawing.Point(18, 243);
+            this.lbListBox.Name = "lbListBox";
+            this.lbListBox.Size = new System.Drawing.Size(152, 18);
+            this.lbListBox.TabIndex = 8;
+            this.lbListBox.Text = "Read/Write Info:";
+            // 
+            // tbRWLength
+            // 
+            this.tbRWLength.Location = new System.Drawing.Point(492, 128);
+            this.tbRWLength.Name = "tbRWLength";
+            this.tbRWLength.Size = new System.Drawing.Size(100, 31);
+            this.tbRWLength.TabIndex = 7;
+            this.tbRWLength.Text = "1";
+            this.tbRWLength.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // tbStartAddress
+            // 
+            this.tbStartAddress.Location = new System.Drawing.Point(174, 125);
+            this.tbStartAddress.Name = "tbStartAddress";
+            this.tbStartAddress.Size = new System.Drawing.Size(100, 31);
+            this.tbStartAddress.TabIndex = 6;
+            this.tbStartAddress.Text = "0";
+            this.tbStartAddress.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // tbSlaveAddress
+            // 
+            this.tbSlaveAddress.Location = new System.Drawing.Point(174, 76);
+            this.tbSlaveAddress.Name = "tbSlaveAddress";
+            this.tbSlaveAddress.Size = new System.Drawing.Size(100, 31);
+            this.tbSlaveAddress.TabIndex = 5;
+            this.tbSlaveAddress.Text = "1";
+            this.tbSlaveAddress.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
             // lst_Info
             // 
             this.lst_Info.HideSelection = false;
@@ -330,51 +376,6 @@
             this.label7.Size = new System.Drawing.Size(134, 18);
             this.label7.TabIndex = 0;
             this.label7.Text = "Slave Address:";
-            // 
-            // tbDatabits
-            // 
-            this.tbDatabits.Location = new System.Drawing.Point(913, 37);
-            this.tbDatabits.Name = "tbDatabits";
-            this.tbDatabits.Size = new System.Drawing.Size(100, 31);
-            this.tbDatabits.TabIndex = 3;
-            this.tbDatabits.Text = "8";
-            this.tbDatabits.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // tbSlaveAddress
-            // 
-            this.tbSlaveAddress.Location = new System.Drawing.Point(174, 76);
-            this.tbSlaveAddress.Name = "tbSlaveAddress";
-            this.tbSlaveAddress.Size = new System.Drawing.Size(100, 31);
-            this.tbSlaveAddress.TabIndex = 5;
-            this.tbSlaveAddress.Text = "1";
-            this.tbSlaveAddress.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // tbStartAddress
-            // 
-            this.tbStartAddress.Location = new System.Drawing.Point(174, 125);
-            this.tbStartAddress.Name = "tbStartAddress";
-            this.tbStartAddress.Size = new System.Drawing.Size(100, 31);
-            this.tbStartAddress.TabIndex = 6;
-            this.tbStartAddress.Text = "0";
-            this.tbStartAddress.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // tbRWLength
-            // 
-            this.tbRWLength.Location = new System.Drawing.Point(492, 128);
-            this.tbRWLength.Name = "tbRWLength";
-            this.tbRWLength.Size = new System.Drawing.Size(100, 31);
-            this.tbRWLength.TabIndex = 7;
-            this.tbRWLength.Text = "1";
-            this.tbRWLength.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // lbListBox
-            // 
-            this.lbListBox.AutoSize = true;
-            this.lbListBox.Location = new System.Drawing.Point(18, 243);
-            this.lbListBox.Name = "lbListBox";
-            this.lbListBox.Size = new System.Drawing.Size(152, 18);
-            this.lbListBox.TabIndex = 8;
-            this.lbListBox.Text = "Read/Write Info:";
             // 
             // FrmModbusRtu
             // 

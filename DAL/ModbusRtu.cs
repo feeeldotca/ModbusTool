@@ -85,10 +85,12 @@ namespace DAL
                 byteLength = iLength / 8 + 1;
             }
 
+            // step 2. Send Command and Read response data from buffer
+
             byte[] response = new byte[byteLength + 5];
             if(SendData(SendCmd, ref response))
             {
-                // analyse response data
+            // step 3. analyse response data 
                 return GetByteArray(response, 3, byteLength);
             }
             else
@@ -170,11 +172,6 @@ namespace DAL
 
             return true;
         }
-
-
-        // step 2. Read response data from buffer
-
-        // step 3. analyse response data
 
 
         #endregion
@@ -275,16 +272,15 @@ namespace DAL
             requestFrame[7] = crc[1];
 
             // Send Modbus request frame to serial port
-            port.Open();
+            if(!port.IsOpen)             port.Open();
             port.Write(requestFrame, 0, requestFrame.Length);
 
             // Read Modbus response frame from serial port
             byte[] responseFrame = new byte[5 + (int)Math.Ceiling((double)quantity / 8)];
-            int bytesRead = port.Read(responseFrame, 0, responseFrame.Length);
-            port.Close();
-
-            // Validate Modbus response frame
-            if (bytesRead != responseFrame.Length)
+            try
+            {
+                int bytesRead = port.Read(responseFrame, 0, responseFrame.Length);
+                if (bytesRead != responseFrame.Length)
                 throw new Exception("Modbus response frame has incorrect length");
 
             if (responseFrame[0] != slaveAddress)
@@ -292,6 +288,16 @@ namespace DAL
 
             if (responseFrame[1] != 0x01)
                 throw new Exception("Modbus response frame has incorrect function code");
+            }
+            catch
+            {
+                throw new Exception("Modbus response false");
+            }
+            
+            port.Close();
+
+            // Validate Modbus response frame
+           
 
             byte[] crcResponse = CalculateCrc(responseFrame, responseFrame.Length - 2);
             if (responseFrame[responseFrame.Length - 2] != crcResponse[0] || responseFrame[responseFrame.Length - 1] != crcResponse[1])

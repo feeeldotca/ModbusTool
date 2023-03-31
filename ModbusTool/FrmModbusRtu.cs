@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Text;
 using System.IO.Ports;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -33,6 +34,8 @@ namespace ModbusTool
             InitializeComponent();
             this.Load += FrmModbusRtu_Load;
         }
+
+        private bool isConnect = false;
 
         private void FrmModbusRtu_Load(object sender, EventArgs e)
         {  
@@ -65,6 +68,27 @@ namespace ModbusTool
             // Store Area: 
             this.cmb_Storage.DataSource = Enum.GetNames(typeof(StoreArea));
 
+        }
+
+         // get system time in string format
+         private string CurrentTime { get { return DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"); } }
+           
+        // prepare log info
+        private void AddLog(string logInfo, int imgCode)
+        {
+            ListViewItem lst = new ListViewItem("  " + CurrentTime, imgCode);
+            lst.SubItems.Add(logInfo);
+            lst_Info.Items.Insert(0, lst);
+        }
+
+        private void btnConnect_Click(object sender, EventArgs e)
+        {
+            if(isConnect)
+            {
+                AddLog("Modbus connected already, please don't reconnect",1 );
+                return;
+            }
+            (int.Parse(this.cmb_Paud.Text.Trim()))
         }
     }
 }
