@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DAL;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -29,13 +30,28 @@ namespace ModbusTool
             OutputRegister_4X,
             InputRegister_3X,
         }
+
+        // Create an enum of variable type
+        public enum VarType
+        {
+            Bit,
+            Byte, 
+            Short,
+            UShort,
+            Int,
+            UInt,
+            Float
+        }
+
         public FrmModbusRtu()
         {
             InitializeComponent();
             this.Load += FrmModbusRtu_Load;
         }
+        // a flag of rtu connection
+        private bool isConnected = false;
 
-        private bool isConnect = false;
+        ModbusRtu modbusRtu = new ModbusRtu();
 
         private void FrmModbusRtu_Load(object sender, EventArgs e)
         {  
@@ -47,33 +63,45 @@ namespace ModbusTool
             if(PortList != null)
             {
                 this.cmb_Port.Items.AddRange(PortList);
-                this.cmb_Port.SelectedIndex = 0;
+                this.cmb_Port.SelectedIndex = 5;
             }
 
             // Baudrate:
 
             this.cmb_Paud.DataSource = new string[] { "2400", "4800", "9600", "19200", "38400" };
+            this.cmb_Paud.SelectedIndex = 2;
 
             // Pariaty
-            //enum Parity = { "Odd", "Even", "None" };
+            //enum Parity = { "None" ,"Odd", "Even", "Mark", "Space" };
             this.cmb_Parity.DataSource = Enum.GetNames(typeof(Parity));
+            this.cmb_Parity.SelectedIndex = 0;
 
-            // StopBits
+            // StopBits {"None", "One", "Two", "OnePointFive"}
             this.cmb_Stopbits.DataSource = Enum.GetNames(typeof(StopBits));
-            this.cmb_Parity.SelectedIndex = 1;
+            this.cmb_Stopbits.SelectedIndex = 1;
 
             // DataFormat:
             this.cmb_Dataformat.DataSource = Enum.GetNames(typeof(DataFormat));
+            this.cmb_Dataformat.SelectedIndex = 0;
 
             // Store Area: 
             this.cmb_Storage.DataSource = Enum.GetNames(typeof(StoreArea));
+            this.cmb_Storage.SelectedIndex = 0;
 
+            //Variable Type:
+            this.cmb_VarType.DataSource = Enum.GetNames(typeof(VarType));
+            this.cmb_VarType.SelectedIndex = 0;
         }
 
-         // get system time in string format
+         // get system time in string format to be used in log information
          private string CurrentTime { get { return DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"); } }
            
         // prepare log info
+        /// <summary>
+        /// General method to record log info
+        /// </summary>
+        /// <param name="logInfo"> infomation to be logged </param>
+        /// <param name="imgCode">the image list index</param>
         private void AddLog(string logInfo, int imgCode)
         {
             ListViewItem lst = new ListViewItem("  " + CurrentTime, imgCode);
@@ -81,14 +109,119 @@ namespace ModbusTool
             lst_Info.Items.Insert(0, lst);
         }
 
+        /// <summary>
+        /// Click connect button will triger this method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnConnect_Click(object sender, EventArgs e)
         {
-            if(isConnect)
+            if(isConnected)
             {
                 AddLog("Modbus connected already, please don't reconnect",1 );
                 return;
             }
-            (int.Parse(this.cmb_Paud.Text.Trim()))
+            try
+            {
+                modbusRtu.OpenMyCom(int.Parse(this.cmb_Paud.Text.Trim()), this.cmb_Port.Text.Trim(), int.Parse(this.tbDatabits.Text.Trim()), (Parity)Enum.Parse(typeof(Parity), this.cmb_Parity.SelectedItem.ToString(),false), (StopBits)Enum.Parse(typeof(StopBits), this.cmb_Stopbits.Text.Trim())) ;
+            }
+            catch(Exception ex)
+            {
+                isConnected = false;
+                AddLog("ModbusRTU connection failed: " + ex.Message, 1);
+                return;
+            }
+
+            isConnected = true;
+            AddLog("ModbusRTU successfully connected", 0);
+        }
+
+        // disconnect Modbus Connection
+        private void btnDisconnect_Click(object sender, EventArgs e)
+        {
+            modbusRtu.CloseMyCom();
+            isConnected = false;
+            AddLog("ModbusRTU disconnected.", 0);
+        }
+
+        private void btnRead_Click(object sender, EventArgs e)
+        {
+            if (!isConnected)
+            {
+                AddLog("Please check Modbus connection", 1);
+                return;
+            }
+
+            ushort slaveAddress = 0;
+            ushort startAddress = 0;
+            ushort rwLength = 0;
+
+            if(!ushort.TryParse(this.txt_SlaveAdd.Text.Trim(), out slaveAddress))
+            {
+                AddLog("Read failed, Slave address need to be positive interger", 1);
+                return;
+            }
+            if (!ushort.TryParse(this.txt_Address.Text.Trim(), out startAddress))
+            {
+                AddLog("Read failed, Start address need to be positive interger", 1);
+                return;
+            }
+            if (!ushort.TryParse(this.txt_Length.Text.Trim(), out rwLength))
+            {
+                AddLog("Read failed, Read/Write length need to be positive interger", 1);
+                return;
+            }
+            VarType varType = (VarType)(Enum.Parse(typeof(VarType), this.cmb_VarType.Text.Trim()));
+            StoreArea storeArea = (StoreArea)(Enum.Parse(typeof(StoreArea), this.cmb_Storage.Text.Trim()));
+
+            byte[] result = null;
+            switch (varType)
+            {
+                case VarType.Bit:
+                    switch (storeArea)
+                    {
+                        case StoreArea.OutputCoil_0X:
+                            result = modbusRtu.ReadOutputCoil(slaveAddress, startAddress, rwLength);
+                            break;
+                       
+                        case StoreArea.InputState_1X:
+                            break;
+                        
+                        case StoreArea.InputRegister_3X:
+                        case StoreArea.OutputRegister_4X:
+                            AddLog("Read failed, storage type not correct", 1);
+                            break;
+
+                        default:
+                            break;
+                    }
+                    string binaryString = string.Empty;
+                    if(result != null)
+                    {
+                        foreach (var item in result)
+                        {
+                            binaryString += Convert.ToString(item, 2).PadRight(8, '0') + " ";
+                        }
+                        AddLog("Read Successful, the result is " + binaryString.Substring(0, rwLength), 0); 
+                    }
+                    else
+                    {
+                        AddLog("Read failed, please check connection, address or variable type", 1);
+                    }
+                    break;
+                case VarType.Short:
+                    break;
+                    case VarType.UShort:
+                    break;
+                case VarType.Int:
+                    break;
+                case VarType.UInt:
+                    break;
+                case VarType.Float:
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

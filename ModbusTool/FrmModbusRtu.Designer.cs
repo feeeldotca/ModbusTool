@@ -28,6 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmModbusRtu));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.tbDatabits = new System.Windows.Forms.TextBox();
             this.btnDisconnect = new System.Windows.Forms.Button();
@@ -45,21 +47,24 @@
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.lbListBox = new System.Windows.Forms.Label();
-            this.tbRWLength = new System.Windows.Forms.TextBox();
-            this.tbStartAddress = new System.Windows.Forms.TextBox();
-            this.tbSlaveAddress = new System.Windows.Forms.TextBox();
+            this.txt_Length = new System.Windows.Forms.TextBox();
+            this.txt_Address = new System.Windows.Forms.TextBox();
+            this.txt_SlaveAdd = new System.Windows.Forms.TextBox();
             this.lst_Info = new System.Windows.Forms.ListView();
-            this.tbWriteValue = new System.Windows.Forms.TextBox();
+            this.txt_WriteValue = new System.Windows.Forms.TextBox();
             this.label9 = new System.Windows.Forms.Label();
             this.btnWrite = new System.Windows.Forms.Button();
             this.btnRead = new System.Windows.Forms.Button();
-            this.cmb_Variabletype = new System.Windows.Forms.ComboBox();
+            this.cmb_VarType = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
             this.cmb_Storage = new System.Windows.Forms.ComboBox();
             this.label12 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
+            this.imageList1 = new System.Windows.Forms.ImageList(this.components);
+            this.InfoTime = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.Info = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -104,6 +109,7 @@
             this.btnDisconnect.TabIndex = 2;
             this.btnDisconnect.Text = "Disconnect";
             this.btnDisconnect.UseVisualStyleBackColor = true;
+            this.btnDisconnect.Click += new System.EventHandler(this.btnDisconnect_Click);
             // 
             // btnConnect
             // 
@@ -212,15 +218,15 @@
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.lbListBox);
-            this.groupBox2.Controls.Add(this.tbRWLength);
-            this.groupBox2.Controls.Add(this.tbStartAddress);
-            this.groupBox2.Controls.Add(this.tbSlaveAddress);
+            this.groupBox2.Controls.Add(this.txt_Length);
+            this.groupBox2.Controls.Add(this.txt_Address);
+            this.groupBox2.Controls.Add(this.txt_SlaveAdd);
             this.groupBox2.Controls.Add(this.lst_Info);
-            this.groupBox2.Controls.Add(this.tbWriteValue);
+            this.groupBox2.Controls.Add(this.txt_WriteValue);
             this.groupBox2.Controls.Add(this.label9);
             this.groupBox2.Controls.Add(this.btnWrite);
             this.groupBox2.Controls.Add(this.btnRead);
-            this.groupBox2.Controls.Add(this.cmb_Variabletype);
+            this.groupBox2.Controls.Add(this.cmb_VarType);
             this.groupBox2.Controls.Add(this.label8);
             this.groupBox2.Controls.Add(this.cmb_Storage);
             this.groupBox2.Controls.Add(this.label12);
@@ -243,51 +249,57 @@
             this.lbListBox.TabIndex = 8;
             this.lbListBox.Text = "Read/Write Info:";
             // 
-            // tbRWLength
+            // txt_Length
             // 
-            this.tbRWLength.Location = new System.Drawing.Point(492, 128);
-            this.tbRWLength.Name = "tbRWLength";
-            this.tbRWLength.Size = new System.Drawing.Size(100, 31);
-            this.tbRWLength.TabIndex = 7;
-            this.tbRWLength.Text = "1";
-            this.tbRWLength.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txt_Length.Location = new System.Drawing.Point(492, 128);
+            this.txt_Length.Name = "txt_Length";
+            this.txt_Length.Size = new System.Drawing.Size(100, 31);
+            this.txt_Length.TabIndex = 7;
+            this.txt_Length.Text = "1";
+            this.txt_Length.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
-            // tbStartAddress
+            // txt_Address
             // 
-            this.tbStartAddress.Location = new System.Drawing.Point(174, 125);
-            this.tbStartAddress.Name = "tbStartAddress";
-            this.tbStartAddress.Size = new System.Drawing.Size(100, 31);
-            this.tbStartAddress.TabIndex = 6;
-            this.tbStartAddress.Text = "0";
-            this.tbStartAddress.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txt_Address.Location = new System.Drawing.Point(174, 125);
+            this.txt_Address.Name = "txt_Address";
+            this.txt_Address.Size = new System.Drawing.Size(100, 31);
+            this.txt_Address.TabIndex = 6;
+            this.txt_Address.Text = "0";
+            this.txt_Address.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
-            // tbSlaveAddress
+            // txt_SlaveAdd
             // 
-            this.tbSlaveAddress.Location = new System.Drawing.Point(174, 76);
-            this.tbSlaveAddress.Name = "tbSlaveAddress";
-            this.tbSlaveAddress.Size = new System.Drawing.Size(100, 31);
-            this.tbSlaveAddress.TabIndex = 5;
-            this.tbSlaveAddress.Text = "1";
-            this.tbSlaveAddress.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txt_SlaveAdd.Location = new System.Drawing.Point(174, 76);
+            this.txt_SlaveAdd.Name = "txt_SlaveAdd";
+            this.txt_SlaveAdd.Size = new System.Drawing.Size(100, 31);
+            this.txt_SlaveAdd.TabIndex = 5;
+            this.txt_SlaveAdd.Text = "1";
+            this.txt_SlaveAdd.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // lst_Info
             // 
+            this.lst_Info.BackColor = System.Drawing.SystemColors.Control;
+            this.lst_Info.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.InfoTime,
+            this.Info});
+            this.lst_Info.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.lst_Info.HideSelection = false;
             this.lst_Info.Location = new System.Drawing.Point(20, 278);
             this.lst_Info.Name = "lst_Info";
             this.lst_Info.Size = new System.Drawing.Size(991, 217);
+            this.lst_Info.SmallImageList = this.imageList1;
             this.lst_Info.TabIndex = 4;
             this.lst_Info.UseCompatibleStateImageBehavior = false;
             this.lst_Info.View = System.Windows.Forms.View.Details;
             // 
-            // tbWriteValue
+            // txt_WriteValue
             // 
-            this.tbWriteValue.Location = new System.Drawing.Point(407, 171);
-            this.tbWriteValue.Name = "tbWriteValue";
-            this.tbWriteValue.Size = new System.Drawing.Size(397, 31);
-            this.tbWriteValue.TabIndex = 3;
-            this.tbWriteValue.Text = "0";
-            this.tbWriteValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txt_WriteValue.Location = new System.Drawing.Point(407, 171);
+            this.txt_WriteValue.Name = "txt_WriteValue";
+            this.txt_WriteValue.Size = new System.Drawing.Size(397, 31);
+            this.txt_WriteValue.TabIndex = 3;
+            this.txt_WriteValue.Text = "0";
+            this.txt_WriteValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // label9
             // 
@@ -315,14 +327,15 @@
             this.btnRead.TabIndex = 2;
             this.btnRead.Text = "Read";
             this.btnRead.UseVisualStyleBackColor = true;
+            this.btnRead.Click += new System.EventHandler(this.btnRead_Click);
             // 
-            // cmb_Variabletype
+            // cmb_VarType
             // 
-            this.cmb_Variabletype.FormattingEnabled = true;
-            this.cmb_Variabletype.Location = new System.Drawing.Point(895, 79);
-            this.cmb_Variabletype.Name = "cmb_Variabletype";
-            this.cmb_Variabletype.Size = new System.Drawing.Size(118, 25);
-            this.cmb_Variabletype.TabIndex = 1;
+            this.cmb_VarType.FormattingEnabled = true;
+            this.cmb_VarType.Location = new System.Drawing.Point(895, 79);
+            this.cmb_VarType.Name = "cmb_VarType";
+            this.cmb_VarType.Size = new System.Drawing.Size(118, 25);
+            this.cmb_VarType.TabIndex = 1;
             // 
             // label8
             // 
@@ -377,6 +390,24 @@
             this.label7.TabIndex = 0;
             this.label7.Text = "Slave Address:";
             // 
+            // imageList1
+            // 
+            this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
+            this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
+            this.imageList1.Images.SetKeyName(0, "info.ico");
+            this.imageList1.Images.SetKeyName(1, "warning.ico");
+            this.imageList1.Images.SetKeyName(2, "error.ico");
+            // 
+            // InfoTime
+            // 
+            this.InfoTime.Text = "Info Time";
+            this.InfoTime.Width = 200;
+            // 
+            // Info
+            // 
+            this.Info.Text = "Log Info";
+            this.Info.Width = 500;
+            // 
             // FrmModbusRtu
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 17F);
@@ -385,6 +416,7 @@
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Font = new System.Drawing.Font("Segoe UI Black", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "FrmModbusRtu";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -417,20 +449,23 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Button btnWrite;
         private System.Windows.Forms.Button btnRead;
-        private System.Windows.Forms.ComboBox cmb_Variabletype;
+        private System.Windows.Forms.ComboBox cmb_VarType;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.ComboBox cmb_Storage;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.TextBox tbWriteValue;
+        private System.Windows.Forms.TextBox txt_WriteValue;
         private System.Windows.Forms.ListView lst_Info;
         private System.Windows.Forms.TextBox tbDatabits;
-        private System.Windows.Forms.TextBox tbRWLength;
-        private System.Windows.Forms.TextBox tbStartAddress;
-        private System.Windows.Forms.TextBox tbSlaveAddress;
+        private System.Windows.Forms.TextBox txt_Length;
+        private System.Windows.Forms.TextBox txt_Address;
+        private System.Windows.Forms.TextBox txt_SlaveAdd;
         private System.Windows.Forms.Label lbListBox;
+        private System.Windows.Forms.ImageList imageList1;
+        private System.Windows.Forms.ColumnHeader InfoTime;
+        private System.Windows.Forms.ColumnHeader Info;
     }
 }
 

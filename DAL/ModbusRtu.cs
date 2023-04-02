@@ -16,7 +16,7 @@ namespace DAL
     public class ModbusRtu
     {
         // Instance com port object
-        private SerialPort myCom = null;
+        private SerialPort myCom = new SerialPort();
 
         // setup timeout attribute value
         public int ReadTimeOut { get; set; } = 2000;
@@ -167,7 +167,7 @@ namespace DAL
 
             }
 
-            res = ms.ToArray();
+            res = buffer.ToArray();
             ms.Dispose();
 
             return true;

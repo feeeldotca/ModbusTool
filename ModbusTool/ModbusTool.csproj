@@ -90,5 +90,11 @@
     <Content Include="Image\system.ico" />
     <Content Include="Image\warning.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DAL\DAL.csproj">
+      <Project>{294d0171-0758-4101-8fb2-5b13addb05fd}</Project>
+      <Name>DAL</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
