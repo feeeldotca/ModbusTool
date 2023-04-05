@@ -210,11 +210,13 @@ namespace ModbusTool
                     string binaryString = string.Empty;
                     if(result1 != null)
                     {
+                        var item1 = "";
                         foreach (var item in result1)
                         {
-                            binaryString += Convert.ToString(item).PadRight(8, '0') + " ";
+                            item1 = item == true ? "1" : "0";
+                            binaryString += item1 + " ";// Convert.ToString(item1).PadRight(8, '0') + " ";
                         }
-                        AddLog("Read Successful, the result is " + binaryString.Substring(0, rwLength), 0); 
+                        AddLog("Read Successful, the result is " + binaryString.Substring(0, rwLength*2), 0); 
                     }
                     else
                     {
