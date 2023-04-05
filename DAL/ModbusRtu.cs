@@ -123,54 +123,55 @@ namespace DAL
             // Send command to coil address
             
             try{
-                if (cmd.Length > 0)
+                
                 myCom.Write(cmd, 0, cmd.Length);
+                // prepare momery to store response data
+                MemoryStream ms = new MemoryStream();
+
+                //prepare a buffer which is big enough to contain response from coil
+                byte[] buffer = new byte[1024];
+
+                // get the start time for reading response
+                DateTime start = DateTime.Now;
+
+
+                // read response data from buffer
+                // step 1: get the value of current buffer size, if yes then read it and write to memory
+
+                // step 2: if current buffer size is 0 means no more value to read
+
+                // step 3: if tried to read but get nothing then check Time out 
+                while (true)
+                {
+                    if (myCom.BytesToRead >= 1)
+                    {
+                        int spCount = myCom.Read(buffer, 0, buffer.Length);
+                        ms.Write(buffer, 0, spCount);
+                    }
+                    else
+                    {
+                        // time out?
+                        if ((DateTime.Now - start).TotalMilliseconds > this.ReadTimeOut)
+                        {
+                            ms.Dispose();
+                            return false;
+                        }
+                        else if (ms.Length > 0)
+                            break;
+                    }
+
+                }
+
+                res = ms.ToArray();
+                ms.Dispose();
+
+                return true;
             }
-            catch
+            catch (Exception)
             {
                 return false;
             }
-            // prepare momery to store response data
-            MemoryStream ms = new MemoryStream();
 
-            //prepare a buffer which is big enough to contain response from coil
-            byte[] buffer = new byte[1024];
-
-            // get the start time for reading response
-            DateTime start = DateTime.Now;
-
-
-            // read response data from buffer
-            // step 1: get the value of current buffer size, if yes then read it and write to memory
-
-            // step 2: if current buffer size is 0 means no more value to read
-
-            // step 3: if tried to read but get nothing then check Time out 
-            while (true)
-            {
-                if (myCom.BytesToRead >= 1)
-                {
-                    int spCount = myCom.Read(buffer, 0, buffer.Length);
-                    ms.Write(buffer, 0, spCount);
-                }
-                else
-                {
-                    // time out?
-                    if ((DateTime.Now - start).TotalMilliseconds > this.ReadTimeOut)
-                    {
-                        ms.Dispose();
-                        return false;
-                    }
-                    else if(ms.Length>0)
-                    break;
-                }
-
-            }
-
-            res = buffer.ToArray();
-            ms.Dispose();
-
-            return true;
         }
 
 

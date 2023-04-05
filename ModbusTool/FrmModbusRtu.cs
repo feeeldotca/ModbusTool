@@ -52,7 +52,7 @@ namespace ModbusTool
         private bool isConnected = false;
 
         ModbusRtu modbusRtu = new ModbusRtu();
-
+        Modbus modbus = null;
         private void FrmModbusRtu_Load(object sender, EventArgs e)
         {  
 
@@ -91,6 +91,7 @@ namespace ModbusTool
             //Variable Type:
             this.cmb_VarType.DataSource = Enum.GetNames(typeof(VarType));
             this.cmb_VarType.SelectedIndex = 0;
+            
         }
 
          // get system time in string format to be used in log information
@@ -123,7 +124,9 @@ namespace ModbusTool
             }
             try
             {
-                modbusRtu.OpenMyCom(int.Parse(this.cmb_Paud.Text.Trim()), this.cmb_Port.Text.Trim(), int.Parse(this.tbDatabits.Text.Trim()), (Parity)Enum.Parse(typeof(Parity), this.cmb_Parity.SelectedItem.ToString(),false), (StopBits)Enum.Parse(typeof(StopBits), this.cmb_Stopbits.Text.Trim())) ;
+                //modbusRtu.OpenMyCom(int.Parse(this.cmb_Paud.Text.Trim()), this.cmb_Port.Text.Trim(), int.Parse(this.tbDatabits.Text.Trim()), (Parity)Enum.Parse(typeof(Parity), this.cmb_Parity.SelectedItem.ToString(),false), (StopBits)Enum.Parse(typeof(StopBits), this.cmb_Stopbits.Text.Trim())) ;
+
+                modbus = new Modbus(this.cmb_Port.Text.Trim(), int.Parse(this.cmb_Paud.Text.Trim()), (Parity)Enum.Parse(typeof(Parity), this.cmb_Parity.SelectedItem.ToString(), false), int.Parse(this.tbDatabits.Text.Trim()), (StopBits)Enum.Parse(typeof(StopBits), this.cmb_Stopbits.Text.Trim()));
             }
             catch(Exception ex)
             {
@@ -140,6 +143,7 @@ namespace ModbusTool
         private void btnDisconnect_Click(object sender, EventArgs e)
         {
             modbusRtu.CloseMyCom();
+            
             isConnected = false;
             AddLog("ModbusRTU disconnected.", 0);
         }
@@ -155,8 +159,14 @@ namespace ModbusTool
             ushort slaveAddress = 0;
             ushort startAddress = 0;
             ushort rwLength = 0;
+            byte slave = 0;
 
             if(!ushort.TryParse(this.txt_SlaveAdd.Text.Trim(), out slaveAddress))
+            {
+                AddLog("Read failed, Slave address need to be positive interger", 1);
+                return;
+            }
+            if (!Byte.TryParse(this.txt_SlaveAdd.Text.Trim(), out slave))
             {
                 AddLog("Read failed, Slave address need to be positive interger", 1);
                 return;
@@ -173,15 +183,17 @@ namespace ModbusTool
             }
             VarType varType = (VarType)(Enum.Parse(typeof(VarType), this.cmb_VarType.Text.Trim()));
             StoreArea storeArea = (StoreArea)(Enum.Parse(typeof(StoreArea), this.cmb_Storage.Text.Trim()));
-
+            
             byte[] result = null;
+            bool[] result1 = null;
             switch (varType)
             {
                 case VarType.Bit:
                     switch (storeArea)
                     {
                         case StoreArea.OutputCoil_0X:
-                            result = modbusRtu.ReadOutputCoil(slaveAddress, startAddress, rwLength);
+                            //result = modbusRtu.ReadOutputCoil(slaveAddress, startAddress, rwLength);
+                            result1 = modbus.ReadOutputCoilStatus(slave, startAddress, rwLength);
                             break;
                        
                         case StoreArea.InputState_1X:
@@ -196,11 +208,11 @@ namespace ModbusTool
                             break;
                     }
                     string binaryString = string.Empty;
-                    if(result != null)
+                    if(result1 != null)
                     {
-                        foreach (var item in result)
+                        foreach (var item in result1)
                         {
-                            binaryString += Convert.ToString(item, 2).PadRight(8, '0') + " ";
+                            binaryString += Convert.ToString(item).PadRight(8, '0') + " ";
                         }
                         AddLog("Read Successful, the result is " + binaryString.Substring(0, rwLength), 0); 
                     }
