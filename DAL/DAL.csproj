@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ByteArray.cs" />
     <Compile Include="ModbusRtu.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

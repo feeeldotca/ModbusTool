@@ -52,7 +52,7 @@ namespace ModbusTool
         private bool isConnected = false;
 
         ModbusRtu modbusRtu = new ModbusRtu();
-        Modbus modbus = null;
+        // Modbus modbus = null;
         private void FrmModbusRtu_Load(object sender, EventArgs e)
         {  
 
@@ -124,9 +124,9 @@ namespace ModbusTool
             }
             try
             {
-                //modbusRtu.OpenMyCom(int.Parse(this.cmb_Paud.Text.Trim()), this.cmb_Port.Text.Trim(), int.Parse(this.tbDatabits.Text.Trim()), (Parity)Enum.Parse(typeof(Parity), this.cmb_Parity.SelectedItem.ToString(),false), (StopBits)Enum.Parse(typeof(StopBits), this.cmb_Stopbits.Text.Trim())) ;
+                modbusRtu.OpenMyCom(int.Parse(this.cmb_Paud.Text.Trim()), this.cmb_Port.Text.Trim(), int.Parse(this.tbDatabits.Text.Trim()), (Parity)Enum.Parse(typeof(Parity), this.cmb_Parity.SelectedItem.ToString(),false), (StopBits)Enum.Parse(typeof(StopBits), this.cmb_Stopbits.Text.Trim())) ;
 
-                modbus = new Modbus(this.cmb_Port.Text.Trim(), int.Parse(this.cmb_Paud.Text.Trim()), (Parity)Enum.Parse(typeof(Parity), this.cmb_Parity.SelectedItem.ToString(), false), int.Parse(this.tbDatabits.Text.Trim()), (StopBits)Enum.Parse(typeof(StopBits), this.cmb_Stopbits.Text.Trim()));
+                //modbus = new Modbus(this.cmb_Port.Text.Trim(), int.Parse(this.cmb_Paud.Text.Trim()), (Parity)Enum.Parse(typeof(Parity), this.cmb_Parity.SelectedItem.ToString(), false), int.Parse(this.tbDatabits.Text.Trim()), (StopBits)Enum.Parse(typeof(StopBits), this.cmb_Stopbits.Text.Trim()));
             }
             catch(Exception ex)
             {
@@ -185,15 +185,15 @@ namespace ModbusTool
             StoreArea storeArea = (StoreArea)(Enum.Parse(typeof(StoreArea), this.cmb_Storage.Text.Trim()));
             
             byte[] result = null;
-            bool[] result1 = null;
+            //bool[] result1 = null;
             switch (varType)
             {
                 case VarType.Bit:
                     switch (storeArea)
                     {
                         case StoreArea.OutputCoil_0X:
-                            //result = modbusRtu.ReadOutputCoil(slaveAddress, startAddress, rwLength);
-                            result1 = modbus.ReadOutputCoilStatus(slave, startAddress, rwLength);
+                            result = modbusRtu.ReadOutputCoil(slaveAddress, startAddress, rwLength);
+                            //result1 = modbus.ReadOutputCoilStatus(slave, startAddress, rwLength);
                             break;
                        
                         case StoreArea.InputState_1X:
@@ -208,15 +208,17 @@ namespace ModbusTool
                             break;
                     }
                     string binaryString = string.Empty;
-                    if(result1 != null)
+                    if(result != null)
                     {
-                        var item1 = "";
-                        foreach (var item in result1)
+                        //var item1 = "";
+                        foreach (var item in result)
                         {
-                            item1 = item == true ? "1" : "0";
-                            binaryString += item1 + " ";// Convert.ToString(item1).PadRight(8, '0') + " ";
+                            //item1 = item == true ? "1" : "0";
+                            char[] c = Convert.ToString(item, 2).PadLeft(8, '0').ToCharArray();
+                            Array.Reverse(c);
+                            binaryString += new string(c);
                         }
-                        AddLog("Read Successful, the result is " + binaryString.Substring(0, rwLength*2), 0); 
+                        AddLog("Read Successful, the result is " + binaryString.Substring(0, rwLength), 0); 
                     }
                     else
                     {

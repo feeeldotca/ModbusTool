@@ -63,16 +63,28 @@ namespace DAL
         public byte[] ReadOutputCoil(int iDevAdd, int iAddress, int iLength)
         {
             // prepare data to be sent to output coil address
-            byte[] SendCmd = new byte[8];
-            SendCmd[0] = (byte)iDevAdd;
-            SendCmd[1] = 0x01;
-            SendCmd[2] = (byte)(iAddress / 256);
-            SendCmd[3] = (byte)(iAddress % 256);
-            SendCmd[4] = (byte)(iLength / 256);
-            SendCmd[5] = (byte)(iLength % 256);
-            byte[] crc = Crc16(SendCmd, 6);
-            SendCmd[6] = crc[0];
-            SendCmd[7] = crc[1];
+            //byte[] SendCmd = new byte[8];
+            //SendCmd[0] = (byte)iDevAdd;
+            //SendCmd[1] = 0x01;
+            //SendCmd[2] = (byte)(iAddress / 256);
+            //SendCmd[3] = (byte)(iAddress % 256);
+            //SendCmd[4] = (byte)(iLength / 256);
+            //SendCmd[5] = (byte)(iLength % 256);
+            //byte[] crc = Crc16(SendCmd, 6);
+            //SendCmd[6] = crc[0];
+            //SendCmd[7] = crc[1];
+
+            // use ByteArray class to send command
+            ByteArray command = new ByteArray();
+            command.Add(new byte[]
+            {
+                (byte)iDevAdd, 0x01, (byte)(iAddress / 256), (byte)(iAddress % 256)
+        });
+            command.Add(new byte[]
+            {
+                (byte)(iLength / 256), (byte)(iLength % 256)
+            }) ;
+            command.Add(Crc16(command.array, 6));
             byte[] Response = new byte[1024];
             // send command data to coil address and get response data
             int byteLength = 0;
@@ -88,7 +100,7 @@ namespace DAL
             // step 2. Send Command and Read response data from buffer
 
             byte[] response = new byte[byteLength + 5];
-            if(SendData(SendCmd, ref response))
+            if(SendData(command.array, ref response))
             {
             // step 3. analyse response data 
                 return GetByteArray(response, 3, byteLength);
