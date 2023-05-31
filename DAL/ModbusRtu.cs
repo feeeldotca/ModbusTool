@@ -15,6 +15,8 @@ namespace DAL
 
     public class ModbusRtu
     {
+        
+        #region objects or properties
         // Instance com port object
         private SerialPort myCom = new SerialPort();
 
@@ -23,6 +25,9 @@ namespace DAL
 
         public int WriteTimeOut { get; set; } = 2000;
 
+        #endregion
+
+        #region open or close serial port
         // establish connection and disconnect
         /// <summary>
         /// 
@@ -58,7 +63,9 @@ namespace DAL
                 myCom.Close();
             }
         }
+        #endregion
 
+        #region Read output coil function code 01H
         // Read Output Coil status
         public byte[] ReadOutputCoil(int iDevAdd, int iAddress, int iLength)
         {
@@ -111,7 +118,87 @@ namespace DAL
             }
                        
         }
+        #endregion
 
+        #region Read Keep Register function code 03H
+
+        public byte[] ReadKeepReg(int iDevAdd, int iAddress, int iLength)
+        {
+            //Step 1: concatinate send command
+
+            ByteArray SendCommand = new ByteArray();
+
+            SendCommand.Add(new byte[] { (byte)iDevAdd, 0x03, (byte)(iAddress / 256), (byte)(iAddress % 256) });
+            SendCommand.Add(new byte[] { (byte)(iLength / 256), (byte)(iLength % 256) });
+            SendCommand.Add(Crc16(SendCommand.array, 6));
+
+            //Step 2: Send / Receive Command
+
+            int byteLength = iLength * 2;
+
+            byte[] response = new byte[5 + byteLength];
+
+            if (SendData(SendCommand.array, ref response))
+            {
+                //Step 3: analize command
+
+                if (response[1] == 0x03 && response[2] == byteLength)
+                {
+                    return GetByteArray(response, 3, byteLength);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        #endregion
+
+        #region Read Input Register Function code 04H
+
+        public byte[] ReadInputReg(int iDevAdd, int iAddress, int iLength)
+        {
+            // Step 1: concatinate send command
+
+            ByteArray SendCommand = new ByteArray();
+
+            SendCommand.Add(new byte[] { (byte)iDevAdd, 0x04, (byte)(iAddress / 256), (byte)(iAddress % 256) });
+            SendCommand.Add(new byte[] { (byte)(iLength / 256), (byte)(iLength % 256) });
+            SendCommand.Add(Crc16(SendCommand.array, 6));
+
+            //Step 2: Send / Receive Command
+
+            int byteLength = iLength * 2;
+
+            byte[] response = new byte[5 + byteLength];
+
+            if (SendData(SendCommand.array, ref response))
+            {
+                //Step 3: analize command
+
+                if (response[1] == 0x04 && response[2] == byteLength)
+                {
+                    return GetByteArray(response, 3, byteLength);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        #endregion
+
+        #region common methods
         private byte[] GetByteArray(byte[] dest, int offset, int count)
         {
             byte[] res = new byte[count];
@@ -189,7 +276,7 @@ namespace DAL
 
         #endregion
 
-        #region  CRC校验
+        #region  CRC Verification
 
         private static readonly byte[] aucCRCHi = {
              0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,

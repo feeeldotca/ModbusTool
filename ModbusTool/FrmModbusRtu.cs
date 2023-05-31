@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Drawing.Text;
 using System.IO.Ports;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
@@ -181,11 +182,17 @@ namespace ModbusTool
                 AddLog("Read failed, Read/Write length need to be positive interger", 1);
                 return;
             }
+            
+            // Read data
+            // get selected variable's type 
             VarType varType = (VarType)(Enum.Parse(typeof(VarType), this.cmb_VarType.Text.Trim()));
+
+            // get selected storage area
             StoreArea storeArea = (StoreArea)(Enum.Parse(typeof(StoreArea), this.cmb_Storage.Text.Trim()));
             
+            // create bype array
             byte[] result = null;
-            //bool[] result1 = null;
+            // this is for other ChatGPT created code test: bool[] result1 = null; 
             switch (varType)
             {
                 case VarType.Bit:
@@ -226,8 +233,23 @@ namespace ModbusTool
                     }
                     break;
                 case VarType.Short:
-                    break;
-                    case VarType.UShort:
+                    switch (storeArea)
+                    {
+                        case StoreArea.OutputCoil_0X:
+                        case StoreArea.InputState_1X:
+                            AddLog("Read error, storage area type not correct", 1);
+                            break;
+                        case StoreArea.OutputRegister_4X:
+                            result = modbusRtu..ReadKeepReg(DevAdd, Address, Length);
+                            break;
+                        case StoreArea.输入寄存器3x:
+                            result = objModbus.ReadInputReg(DevAdd, Address, Length);
+                            break;
+                        default:
+                            break;
+                    }
+
+                case VarType.UShort:
                     break;
                 case VarType.Int:
                     break;
