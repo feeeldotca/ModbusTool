@@ -1,22 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DAL
 {
     #region class by XingeEdu
-
     public class ModbusRtu
     {
-        
         #region objects or properties
+
         // Instance com port object
         private SerialPort myCom = new SerialPort();
 
@@ -24,6 +19,15 @@ namespace DAL
         public int ReadTimeOut { get; set; } = 2000;
 
         public int WriteTimeOut { get; set; } = 2000;
+
+        // read return information timeout
+        public int ReceiveTimeOut { get; set; } = 2000;
+
+        //Sleep time 
+        public int SleepTime { get; set; } = 20;
+
+        //data format setting:
+        public DataFormat Data_Format { get; set; } = DataFormat.ABCD;
 
         #endregion
 
@@ -118,6 +122,60 @@ namespace DAL
             }
                        
         }
+        #endregion
+
+
+        #region 读取输入线圈 功能码02H
+        /// <summary>
+        /// 读取输入线圈
+        /// </summary>
+        /// <param name="iDevAdd">从站地址</param>
+        /// <param name="iAddress">起始地址</param>
+        /// <param name="iLength">长度</param>
+        /// <returns></returns>
+        public byte[] ReadInputStatus(int iDevAdd, int iAddress, int iLength)
+        {
+            //第一步：拼接报文
+
+            ByteArray SendCommand = new ByteArray();
+
+            SendCommand.Add(new byte[] { (byte)iDevAdd, 0x02, (byte)(iAddress / 256), (byte)(iAddress % 256) });
+            SendCommand.Add(new byte[] { (byte)(iLength / 256), (byte)(iLength % 256) });
+            SendCommand.Add(Crc16(SendCommand.array, 6));
+
+            //第二步：发送报文  接受报文
+
+            int byteLength = 0;
+            if (iLength % 8 == 0)
+            {
+                byteLength = iLength / 8;
+            }
+            else
+            {
+                byteLength = iLength / 8 + 1;
+            }
+
+            byte[] response = new byte[5 + byteLength];
+
+            if (SendData(SendCommand.array, ref response))
+            {
+                //第三步：解析报文
+
+                if (response[1] == 0x02 && response[2] == byteLength)
+                {
+                    return GetByteArray(response, 3, byteLength);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         #endregion
 
         #region Read Keep Register function code 03H
@@ -344,6 +402,8 @@ namespace DAL
 
         #endregion
     }
+    #endregion
+
     // CRC calculation by ChatGPT
 
     #region class by ChatGPT

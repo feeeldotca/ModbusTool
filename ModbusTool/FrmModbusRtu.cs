@@ -160,18 +160,19 @@ namespace ModbusTool
             ushort slaveAddress = 0;
             ushort startAddress = 0;
             ushort rwLength = 0;
-            byte slave = 0;
+            //byte slave = 0;
 
             if(!ushort.TryParse(this.txt_SlaveAdd.Text.Trim(), out slaveAddress))
             {
                 AddLog("Read failed, Slave address need to be positive interger", 1);
                 return;
             }
+            /*
             if (!Byte.TryParse(this.txt_SlaveAdd.Text.Trim(), out slave))
             {
                 AddLog("Read failed, Slave address need to be positive interger", 1);
                 return;
-            }
+            }*/
             if (!ushort.TryParse(this.txt_Address.Text.Trim(), out startAddress))
             {
                 AddLog("Read failed, Start address need to be positive interger", 1);
@@ -204,12 +205,13 @@ namespace ModbusTool
                             break;
                        
                         case StoreArea.InputState_1X:
+                            result = modbusRtu.ReadInputStatus(slaveAddress, startAddress, rwLength);
                             break;
                         
                         case StoreArea.InputRegister_3X:
                         case StoreArea.OutputRegister_4X:
                             AddLog("Read failed, storage type not correct", 1);
-                            break;
+                            return;
 
                         default:
                             break;
@@ -240,15 +242,30 @@ namespace ModbusTool
                             AddLog("Read error, storage area type not correct", 1);
                             break;
                         case StoreArea.OutputRegister_4X:
-                            result = modbusRtu..ReadKeepReg(DevAdd, Address, Length);
+                            result = modbusRtu.ReadKeepReg(slaveAddress, startAddress, rwLength);
                             break;
-                        case StoreArea.输入寄存器3x:
-                            result = objModbus.ReadInputReg(DevAdd, Address, Length);
+                        case StoreArea.InputRegister_3X:
+                            result = modbusRtu.ReadInputReg(slaveAddress, startAddress, rwLength);
                             break;
                         default:
                             break;
                     }
+                    string shortString = string.Empty;
 
+                    if (result != null && result.Length == rwLength * 2)
+                    {
+                        for (int i = 0; i < result.Length; i += 2)
+                        {
+                            shortString += BitConverter.ToInt16(Get16ByteArray(result, i, 
+                                modbusRtu.Data_Format), 0).ToString() + " ";
+                        }
+                        AddLog("读取成功，结果为" + shortString.Trim(), 0);
+                    }
+                    else
+                    {
+                        AddLog( "读取失败，请检查地址、类型或连接状态", 1);
+                    }
+                    break;
                 case VarType.UShort:
                     break;
                 case VarType.Int:
@@ -261,5 +278,86 @@ namespace ModbusTool
                     break;
             }
         }
+
+        #region get data from all kinds of array
+
+        private byte[] Get16ByteArray(byte[] byteArray, int start, DataFormat type)
+        {
+            byte[] Res = new byte[2];
+
+            if (byteArray != null && byteArray.Length >= start + 2)
+            {
+                byte[] ResTemp = new byte[2];
+                for (int i = 0; i < 2; i++)
+                {
+                    ResTemp[i] = byteArray[i + start];
+                }
+
+                switch (type)
+                {
+                    case DataFormat.ABCD:
+                    case DataFormat.CDAB:
+                        Res[0] = ResTemp[1];
+                        Res[1] = ResTemp[0];
+                        break;
+                    case DataFormat.BADC:
+                    case DataFormat.DCBA:
+                        Res = ResTemp;
+                        break;
+                }
+                return Res;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private byte[] Get32ByteArray(byte[] byteArray, int start, DataFormat type)
+        {
+            byte[] Res = new byte[4];
+
+            if (byteArray != null && byteArray.Length >= start + 4)
+            {
+                byte[] ResTemp = new byte[4];
+                for (int i = 0; i < 4; i++)
+                {
+                    ResTemp[i] = byteArray[i + start];
+                }
+
+                switch (type)
+                {
+                    case DataFormat.ABCD:
+                        Res[0] = ResTemp[3];
+                        Res[1] = ResTemp[2];
+                        Res[2] = ResTemp[1];
+                        Res[3] = ResTemp[0];
+                        break;
+                    case DataFormat.CDAB:
+                        Res[0] = ResTemp[1];
+                        Res[1] = ResTemp[0];
+                        Res[2] = ResTemp[3];
+                        Res[3] = ResTemp[2];
+                        break;
+                    case DataFormat.BADC:
+                        Res[0] = ResTemp[2];
+                        Res[1] = ResTemp[3];
+                        Res[2] = ResTemp[0];
+                        Res[3] = ResTemp[1];
+                        break;
+                    case DataFormat.DCBA:
+                        Res = ResTemp;
+                        break;
+                }
+                return Res;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+
+        #endregion
     }
 }
