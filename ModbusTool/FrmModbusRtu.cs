@@ -257,22 +257,139 @@ namespace ModbusTool
                         for (int i = 0; i < result.Length; i += 2)
                         {
                             shortString += BitConverter.ToInt16(Get16ByteArray(result, i, 
-                                modbusRtu.Data_Format), 0).ToString() + " ";
+                                (DataFormat)modbusRtu.Data_Format), 0).ToString() + " ";
                         }
-                        AddLog("读取成功，结果为" + shortString.Trim(), 0);
+                        AddLog("Read Successful, result is " + shortString.Trim(), 0);
+                    }
+                    else
+                    {
+                        AddLog( "Read failed, please check address, type or status of connection ", 1);
+                    }
+                    break;
+                case VarType.UShort:
+                    switch (storeArea)
+                    {
+                        case StoreArea.OutputCoil_0X:
+                        case StoreArea.InputState_1X:
+                            AddLog("读取失败，存储区类型不正确",1);
+                            break;
+                        case StoreArea.OutputRegister_4X:
+                            result = modbusRtu.ReadKeepReg(slaveAddress, startAddress, rwLength);
+                            break;
+                        case StoreArea.InputRegister_3X:
+                            result = modbusRtu.ReadInputReg(slaveAddress, startAddress, rwLength);
+                            break;
+                        default:
+                            break;
+                    }
+                    string ushortString = string.Empty;
+
+                    if (result != null && result.Length == rwLength * 2)
+                    {
+                        for (int i = 0; i < result.Length; i += 2)
+                        {
+                            ushortString += BitConverter.ToUInt16(Get16ByteArray(result, i, (DataFormat)modbusRtu.Data_Format), 0).ToString() + " ";
+                        }
+                        AddLog("Read Successful, result is " + ushortString.Trim(), 0);
                     }
                     else
                     {
                         AddLog( "读取失败，请检查地址、类型或连接状态", 1);
                     }
                     break;
-                case VarType.UShort:
-                    break;
                 case VarType.Int:
+
+                    switch (storeArea)
+                    {
+                        case StoreArea.OutputCoil_0X:
+                        case StoreArea.InputState_1X:
+                            AddLog( "读取失败，存储区类型不正确",1);
+                            break;
+                        case StoreArea.OutputRegister_4X:
+                            result = modbusRtu.ReadKeepReg(slaveAddress, startAddress, rwLength * 2);
+                            break;
+                        case StoreArea.InputRegister_3X:
+                            result = modbusRtu.ReadInputReg(slaveAddress, startAddress, rwLength * 2);
+                            break;
+                        default:
+                            break;
+                    }
+                    string intString = string.Empty;
+
+                    if (result != null && result.Length == rwLength * 4)
+                    {
+                        for (int i = 0; i < result.Length; i += 4)
+                        {
+                            intString += BitConverter.ToInt32(Get32ByteArray(result, i, (DataFormat)modbusRtu.Data_Format), 0).ToString() + " ";
+                        }
+                        AddLog("读取成功，结果为" + intString.Trim(),0);
+                    }
+                    else
+                    {
+                        AddLog("读取失败，请检查地址、类型或连接状态",1);
+                    }
                     break;
                 case VarType.UInt:
+                    switch (storeArea)
+                    {
+                        case StoreArea.OutputCoil_0X:
+                        case StoreArea.InputState_1X:
+                            AddLog("读取失败，存储区类型不正确",1);
+                            break;
+                        case StoreArea.OutputRegister_4X:
+                            result = modbusRtu.ReadKeepReg(slaveAddress, startAddress, rwLength * 2);
+                            break;
+                        case StoreArea.InputRegister_3X:
+                            result = modbusRtu.ReadInputReg(slaveAddress, startAddress, rwLength * 2);
+                            break;
+                        default:
+                            break;
+                    }
+                    string uintString = string.Empty;
+
+                    if (result != null && result.Length == rwLength * 4)
+                    {
+                        for (int i = 0; i < result.Length; i += 4)
+                        {
+                            uintString += BitConverter.ToUInt32(Get32ByteArray(result, i, (DataFormat)modbusRtu.Data_Format), 0).ToString() + " ";
+                        }
+                        AddLog("读取成功，结果为" + uintString.Trim(), 0);
+                    }
+                    else
+                    {
+                        AddLog( "读取失败，请检查地址、类型或连接状态", 1);
+                    }
                     break;
                 case VarType.Float:
+                    switch (storeArea)
+                    {
+                        case StoreArea.OutputCoil_0X:
+                        case StoreArea.InputState_1X:
+                            AddLog("读取失败，存储区类型不正确", 1);
+                            break;
+                        case StoreArea.OutputRegister_4X:
+                            result = modbusRtu.ReadKeepReg(slaveAddress, startAddress, rwLength * 2);
+                            break;
+                        case StoreArea.InputRegister_3X:
+                            result = modbusRtu.ReadInputReg(slaveAddress, startAddress, rwLength * 2);
+                            break;
+                        default:
+                            break;
+                    }
+                    string floatString = string.Empty;
+
+                    if (result != null && result.Length == rwLength * 4)
+                    {
+                        for (int i = 0; i < result.Length; i += 4)
+                        {
+                            floatString += BitConverter.ToSingle(Get32ByteArray(result, i, (DataFormat)modbusRtu.Data_Format), 0).ToString() + " ";
+                        }
+                        AddLog( "读取成功，结果为" + floatString.Trim(),0);
+                    }
+                    else
+                    {
+                        AddLog("读取失败，请检查地址、类型或连接状态", 1);
+                    }
                     break;
                 default:
                     break;
