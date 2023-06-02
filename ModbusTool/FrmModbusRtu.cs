@@ -271,7 +271,7 @@ namespace ModbusTool
                     {
                         case StoreArea.OutputCoil_0X:
                         case StoreArea.InputState_1X:
-                            AddLog("读取失败，存储区类型不正确",1);
+                            AddLog("Read error, storage area type not correct", 1);
                             break;
                         case StoreArea.OutputRegister_4X:
                             result = modbusRtu.ReadKeepReg(slaveAddress, startAddress, rwLength);
@@ -294,7 +294,7 @@ namespace ModbusTool
                     }
                     else
                     {
-                        AddLog( "读取失败，请检查地址、类型或连接状态", 1);
+                        AddLog("Read failed, please check address, type or status of connection ", 1);
                     }
                     break;
                 case VarType.Int:
@@ -303,7 +303,7 @@ namespace ModbusTool
                     {
                         case StoreArea.OutputCoil_0X:
                         case StoreArea.InputState_1X:
-                            AddLog( "读取失败，存储区类型不正确",1);
+                            AddLog("Read error, storage area type not correct", 1);
                             break;
                         case StoreArea.OutputRegister_4X:
                             result = modbusRtu.ReadKeepReg(slaveAddress, startAddress, rwLength * 2);
@@ -322,11 +322,11 @@ namespace ModbusTool
                         {
                             intString += BitConverter.ToInt32(Get32ByteArray(result, i, (DataFormat)modbusRtu.Data_Format), 0).ToString() + " ";
                         }
-                        AddLog("读取成功，结果为" + intString.Trim(),0);
+                        AddLog("Read Successful, result is " + intString.Trim(),0);
                     }
                     else
                     {
-                        AddLog("读取失败，请检查地址、类型或连接状态",1);
+                        AddLog("Read failed, please check address, type or status of connection ", 1);
                     }
                     break;
                 case VarType.UInt:
@@ -334,7 +334,7 @@ namespace ModbusTool
                     {
                         case StoreArea.OutputCoil_0X:
                         case StoreArea.InputState_1X:
-                            AddLog("读取失败，存储区类型不正确",1);
+                            AddLog("Read error, storage area type not correct", 1);
                             break;
                         case StoreArea.OutputRegister_4X:
                             result = modbusRtu.ReadKeepReg(slaveAddress, startAddress, rwLength * 2);
@@ -353,11 +353,11 @@ namespace ModbusTool
                         {
                             uintString += BitConverter.ToUInt32(Get32ByteArray(result, i, (DataFormat)modbusRtu.Data_Format), 0).ToString() + " ";
                         }
-                        AddLog("读取成功，结果为" + uintString.Trim(), 0);
+                        AddLog("Read Successful, result is " + uintString.Trim(), 0);
                     }
                     else
                     {
-                        AddLog( "读取失败，请检查地址、类型或连接状态", 1);
+                        AddLog("Read failed, please check address, type or status of connection ", 1);
                     }
                     break;
                 case VarType.Float:
@@ -365,7 +365,7 @@ namespace ModbusTool
                     {
                         case StoreArea.OutputCoil_0X:
                         case StoreArea.InputState_1X:
-                            AddLog("读取失败，存储区类型不正确", 1);
+                            AddLog("Read error, storage area type not correct", 1);
                             break;
                         case StoreArea.OutputRegister_4X:
                             result = modbusRtu.ReadKeepReg(slaveAddress, startAddress, rwLength * 2);
@@ -384,11 +384,11 @@ namespace ModbusTool
                         {
                             floatString += BitConverter.ToSingle(Get32ByteArray(result, i, (DataFormat)modbusRtu.Data_Format), 0).ToString() + " ";
                         }
-                        AddLog( "读取成功，结果为" + floatString.Trim(),0);
+                        AddLog("Read Successful, result is " + floatString.Trim(),0);
                     }
                     else
                     {
-                        AddLog("读取失败，请检查地址、类型或连接状态", 1);
+                        AddLog("Read failed, please check address, type or status of connection ", 1);
                     }
                     break;
                 default:
