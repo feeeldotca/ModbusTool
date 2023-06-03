@@ -396,6 +396,175 @@ namespace ModbusTool
             }
         }
 
+        private void btn_Write_Click(object sender, EventArgs e)
+        {
+            if (!IsConnected)
+            {
+                AddLog("请先检查与Modbus从站之间的连接",1);
+                return;
+            }
+
+            ushort DevAdd = 0;
+
+            ushort Address = 0;
+
+            ushort Length = 0;
+
+            if (!ushort.TryParse(this.txt_SlaveAdd.Text.Trim(), out DevAdd))
+            {
+                AddLog("Write failed，从站地址必须为正整数",1);
+                return;
+            }
+
+            if (!ushort.TryParse(this.txt_Variable.Text.Trim(), out Address))
+            {
+                AddLog("Write failed，start address must be positive interger",1);
+                return;
+            }
+
+            if (!ushort.TryParse(this.txt_Length.Text.Trim(), out Length))
+            {
+                AddLog( "Write failed，read length must be positive interger",1);
+                return;
+            }
+
+            //获取选择的变量类型
+            VarType varType = (VarType)(Enum.Parse(typeof(VarType), this.cmb_VarType.SelectedItem.ToString(), false));
+
+            //获取选择的存储区
+            StoreArea storeArea = (StoreArea)(Enum.Parse(typeof(StoreArea), this.cmb_StoreArea.SelectedItem.ToString(), false));
+
+
+            bool result = false;
+
+            string SetText = this.txt_SetValue.Text.Trim();
+
+            #region 寄存器写入测试
+
+            //switch (varType)
+            //{
+            //    case VarType.Bit:
+            //        break;
+            //    case VarType.Short:
+            //        result = objModbus.PreSetSingleReg(DevAdd, Address, short.Parse(SetText));
+            //        break;
+            //    case VarType.UShort:
+            //        result = objModbus.PreSetSingleReg(DevAdd, Address, ushort.Parse(SetText));
+            //        break;
+            //    case VarType.Int:
+            //        result = objModbus.PreSetMultiReg(DevAdd, Address, int.Parse(SetText));
+            //        break;
+            //    case VarType.UInt:
+            //        result = objModbus.PreSetMultiReg(DevAdd, Address, uint.Parse(SetText));
+            //        break;
+            //    case VarType.Float:
+            //        result = objModbus.PreSetMultiReg(DevAdd, Address, float.Parse(SetText));
+            //        break;
+            //    default:
+            //        break;
+            //}
+
+            //AddLog(result ? 0 : 1, result ? "Write succeed, value wrote is: " + SetText : "Write failed");
+
+            #endregion
+
+            switch (varType)
+            {
+                case VarType.Bit:
+
+                    switch (storeArea)
+                    {
+                        case StoreArea.OutputCoil_0X:
+
+                            result = modbusRtu.ForceMultiCoil(DevAdd, Address, GetBoolArray(SetText));
+
+                            break;
+                        case StoreArea.InputState_1X:
+                        case StoreArea.OutputRegister_4X:
+                        case StoreArea.InputRegister_3X:
+                            AddLog("Write failed, type is not supported",1);
+                            return;
+                    }
+                    AddLog(result ? "Write succeed, value wrote is: " + SetText : "Write failed", result ? 0 : 1);
+                    break;
+                case VarType.Short:
+                    switch (storeArea)
+                    {
+                        case StoreArea.OutputRegister_4X:
+                            result = modbusRtu.PreSetMultiReg(DevAdd, Address, GetShortArray(SetText));
+                            break;
+                        case StoreArea.OutputCoil_0X:
+                        case StoreArea.InputState_1X:
+                        case StoreArea.InputRegister_3X:
+                            AddLog("Write failed, type is not supported",1);
+                            return;
+                    }
+                    AddLog(result ? "Write succeed, value wrote is: " + SetText : "Write failed", result ? 0 : 1, );
+                    break;
+                case VarType.UShort:
+
+                    switch (storeArea)
+                    {
+                        case StoreArea.OutputRegister_4X:
+                            result = modbusRtu.PreSetMultiReg(DevAdd, Address, GetUShortArray(SetText));
+                            break;
+                        case StoreArea.OutputCoil_0X:
+                        case StoreArea.InputState_1X:
+                        case StoreArea.InputRegister_3X:
+                            AddLog("Write failed, type is not supported",1);
+                            return;
+                    }
+                    AddLog( result ? "Write succeed, value wrote is: " + SetText : "Write failed", result ? 0 : 1);
+                    break;
+                case VarType.Int:
+
+                    switch (storeArea)
+                    {
+                        case StoreArea.OutputRegister_4X:
+                            result = modbusRtu.PreSetMultiReg(DevAdd, Address, GetIntArray(SetText));
+                            break;
+                        case StoreArea.OutputCoil_0X:
+                        case StoreArea.InputState_1X:
+                        case StoreArea.InputRegister_3X:
+                            AddLog("Write failed, type is not supported",1);
+                            return;
+                    }
+                    AddLog( result ? "Write succeed, value wrote is: " + SetText : "Write failed", result ? 0 : 1);
+                    break;
+                case VarType.UInt:
+
+                    switch (storeArea)
+                    {
+                        case StoreArea.OutputRegister_4X:
+                            result = modbusRtu.PreSetMultiReg(DevAdd, Address, GetUIntArray(SetText));
+                            break;
+                        case StoreArea.OutputCoil_0X:
+                        case StoreArea.InputState_1X:
+                        case StoreArea.InputRegister_3X:
+                            AddLog("Write failed, type is not supported", 1);
+                            return;
+                    }
+                    AddLog(result ? "Write succeed, value wrote is: " + SetText : "Write failed", result ? 0 : 1);
+                    break;
+                case VarType.Float:
+                    switch (storeArea)
+                    {
+                        case StoreArea.OutputRegister_4X:
+                            result = modbusRtu.PreSetMultiReg(DevAdd, Address, GetFloatArray(SetText));
+                            break;
+                        case StoreArea.OutputCoil_0X:
+                        case StoreArea.InputState_1X:
+                        case StoreArea.InputRegister_3X:
+                            AddLog("Write failed, type is not supported", 1);
+                            return;
+                    }
+                    AddLog( result ? "Write succeed, value wrote is: " + SetText : "Write failed", result ? 0 : 1);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         #region get data from all kinds of array
 
         private byte[] Get16ByteArray(byte[] byteArray, int start, DataFormat type)
