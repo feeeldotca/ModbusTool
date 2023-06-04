@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -164,18 +165,18 @@ namespace ModbusTool
 
             if(!ushort.TryParse(this.txt_SlaveAdd.Text.Trim(), out slaveAddress))
             {
-                AddLog("Read failed, Slave address need to be positive interger", 1);
+                AddLog("Read failed, Slave startAddress need to be positive interger", 1);
                 return;
             }
             /*
             if (!Byte.TryParse(this.txt_SlaveAdd.Text.Trim(), out slave))
             {
-                AddLog("Read failed, Slave address need to be positive interger", 1);
+                AddLog("Read failed, Slave startAddress need to be positive interger", 1);
                 return;
             }*/
             if (!ushort.TryParse(this.txt_Address.Text.Trim(), out startAddress))
             {
-                AddLog("Read failed, Start address need to be positive interger", 1);
+                AddLog("Read failed, Start startAddress need to be positive interger", 1);
                 return;
             }
             if (!ushort.TryParse(this.txt_Length.Text.Trim(), out rwLength))
@@ -231,7 +232,7 @@ namespace ModbusTool
                     }
                     else
                     {
-                        AddLog("Read failed, please check connection, address or variable type", 1);
+                        AddLog("Read failed, please check connection, startAddress or variable type", 1);
                     }
                     break;
                 case VarType.Short:
@@ -257,7 +258,7 @@ namespace ModbusTool
                         for (int i = 0; i < result.Length; i += 2)
                         {
                             shortString += BitConverter.ToInt16(Get16ByteArray(result, i, 
-                                (DataFormat)modbusRtu.Data_Format), 0).ToString() + " ";
+                                (DataFormat)modbusRtu.DataFormat), 0).ToString() + " ";
                         }
                         AddLog("Read Successful, result is " + shortString.Trim(), 0);
                     }
@@ -288,7 +289,7 @@ namespace ModbusTool
                     {
                         for (int i = 0; i < result.Length; i += 2)
                         {
-                            ushortString += BitConverter.ToUInt16(Get16ByteArray(result, i, (DataFormat)modbusRtu.Data_Format), 0).ToString() + " ";
+                            ushortString += BitConverter.ToUInt16(Get16ByteArray(result, i, (DataFormat)modbusRtu.DataFormat), 0).ToString() + " ";
                         }
                         AddLog("Read Successful, result is " + ushortString.Trim(), 0);
                     }
@@ -320,7 +321,7 @@ namespace ModbusTool
                     {
                         for (int i = 0; i < result.Length; i += 4)
                         {
-                            intString += BitConverter.ToInt32(Get32ByteArray(result, i, (DataFormat)modbusRtu.Data_Format), 0).ToString() + " ";
+                            intString += BitConverter.ToInt32(Get32ByteArray(result, i, (DataFormat)modbusRtu.DataFormat), 0).ToString() + " ";
                         }
                         AddLog("Read Successful, result is " + intString.Trim(),0);
                     }
@@ -351,7 +352,7 @@ namespace ModbusTool
                     {
                         for (int i = 0; i < result.Length; i += 4)
                         {
-                            uintString += BitConverter.ToUInt32(Get32ByteArray(result, i, (DataFormat)modbusRtu.Data_Format), 0).ToString() + " ";
+                            uintString += BitConverter.ToUInt32(Get32ByteArray(result, i, (DataFormat)modbusRtu.DataFormat), 0).ToString() + " ";
                         }
                         AddLog("Read Successful, result is " + uintString.Trim(), 0);
                     }
@@ -382,7 +383,7 @@ namespace ModbusTool
                     {
                         for (int i = 0; i < result.Length; i += 4)
                         {
-                            floatString += BitConverter.ToSingle(Get32ByteArray(result, i, (DataFormat)modbusRtu.Data_Format), 0).ToString() + " ";
+                            floatString += BitConverter.ToSingle(Get32ByteArray(result, i, (DataFormat)modbusRtu.DataFormat), 0).ToString() + " ";
                         }
                         AddLog("Read Successful, result is " + floatString.Trim(),0);
                     }
@@ -398,27 +399,27 @@ namespace ModbusTool
 
         private void btn_Write_Click(object sender, EventArgs e)
         {
-            if (!IsConnected)
+            if (!isConnected)
             {
-                AddLog("请先检查与Modbus从站之间的连接",1);
+                AddLog("Please check connection to Modbus slave",1);
                 return;
             }
 
-            ushort DevAdd = 0;
+            ushort slaveAddress = 0;
 
-            ushort Address = 0;
+            ushort startAddress = 0;
 
             ushort Length = 0;
 
-            if (!ushort.TryParse(this.txt_SlaveAdd.Text.Trim(), out DevAdd))
+            if (!ushort.TryParse(this.txt_SlaveAdd.Text.Trim(), out slaveAddress))
             {
-                AddLog("Write failed，从站地址必须为正整数",1);
+                AddLog("Write failed，Slave address should be positive interger",1);
                 return;
             }
 
-            if (!ushort.TryParse(this.txt_Variable.Text.Trim(), out Address))
+            if (!ushort.TryParse(this.cmb_VarType.Text.Trim(), out startAddress))
             {
-                AddLog("Write failed，start address must be positive interger",1);
+                AddLog("Write failed，start startAddress must be positive interger",1);
                 return;
             }
 
@@ -428,37 +429,37 @@ namespace ModbusTool
                 return;
             }
 
-            //获取选择的变量类型
+            //get variable type selected from UI
             VarType varType = (VarType)(Enum.Parse(typeof(VarType), this.cmb_VarType.SelectedItem.ToString(), false));
 
-            //获取选择的存储区
-            StoreArea storeArea = (StoreArea)(Enum.Parse(typeof(StoreArea), this.cmb_StoreArea.SelectedItem.ToString(), false));
+            //get storage area from UI
+            StoreArea storeArea = (StoreArea)(Enum.Parse(typeof(StoreArea), this.cmb_Storage.SelectedItem.ToString(), false));
 
 
             bool result = false;
 
-            string SetText = this.txt_SetValue.Text.Trim();
+            string SetText = this.txt_WriteValue.Text.Trim();
 
-            #region 寄存器写入测试
+            #region test for writing into register 
 
             //switch (varType)
             //{
             //    case VarType.Bit:
             //        break;
             //    case VarType.Short:
-            //        result = objModbus.PreSetSingleReg(DevAdd, Address, short.Parse(SetText));
+            //        result = objModbus.PreSetSingleReg(slaveAddress, startAddress, short.Parse(SetText));
             //        break;
             //    case VarType.UShort:
-            //        result = objModbus.PreSetSingleReg(DevAdd, Address, ushort.Parse(SetText));
+            //        result = objModbus.PreSetSingleReg(slaveAddress, startAddress, ushort.Parse(SetText));
             //        break;
             //    case VarType.Int:
-            //        result = objModbus.PreSetMultiReg(DevAdd, Address, int.Parse(SetText));
+            //        result = objModbus.PreSetMultiReg(slaveAddress, startAddress, int.Parse(SetText));
             //        break;
             //    case VarType.UInt:
-            //        result = objModbus.PreSetMultiReg(DevAdd, Address, uint.Parse(SetText));
+            //        result = objModbus.PreSetMultiReg(slaveAddress, startAddress, uint.Parse(SetText));
             //        break;
             //    case VarType.Float:
-            //        result = objModbus.PreSetMultiReg(DevAdd, Address, float.Parse(SetText));
+            //        result = objModbus.PreSetMultiReg(slaveAddress, startAddress, float.Parse(SetText));
             //        break;
             //    default:
             //        break;
@@ -476,7 +477,7 @@ namespace ModbusTool
                     {
                         case StoreArea.OutputCoil_0X:
 
-                            result = modbusRtu.ForceMultiCoil(DevAdd, Address, GetBoolArray(SetText));
+                            result = modbusRtu.ForceMultiCoil(slaveAddress, startAddress, GetBoolArray(SetText));
 
                             break;
                         case StoreArea.InputState_1X:
@@ -491,7 +492,7 @@ namespace ModbusTool
                     switch (storeArea)
                     {
                         case StoreArea.OutputRegister_4X:
-                            result = modbusRtu.PreSetMultiReg(DevAdd, Address, GetShortArray(SetText));
+                            result = modbusRtu.PreSetMultiReg(slaveAddress, startAddress, GetShortArray(SetText));
                             break;
                         case StoreArea.OutputCoil_0X:
                         case StoreArea.InputState_1X:
@@ -499,14 +500,14 @@ namespace ModbusTool
                             AddLog("Write failed, type is not supported",1);
                             return;
                     }
-                    AddLog(result ? "Write succeed, value wrote is: " + SetText : "Write failed", result ? 0 : 1, );
+                    AddLog(result ? "Write succeed, value wrote is: " + SetText : "Write failed", result ? 0 : 1);
                     break;
                 case VarType.UShort:
 
                     switch (storeArea)
                     {
                         case StoreArea.OutputRegister_4X:
-                            result = modbusRtu.PreSetMultiReg(DevAdd, Address, GetUShortArray(SetText));
+                            result = modbusRtu.PreSetMultiReg(slaveAddress, startAddress, GetUShortArray(SetText));
                             break;
                         case StoreArea.OutputCoil_0X:
                         case StoreArea.InputState_1X:
@@ -521,7 +522,7 @@ namespace ModbusTool
                     switch (storeArea)
                     {
                         case StoreArea.OutputRegister_4X:
-                            result = modbusRtu.PreSetMultiReg(DevAdd, Address, GetIntArray(SetText));
+                            result = modbusRtu.PreSetMultiReg(slaveAddress, startAddress, GetIntArray(SetText));
                             break;
                         case StoreArea.OutputCoil_0X:
                         case StoreArea.InputState_1X:
@@ -536,7 +537,7 @@ namespace ModbusTool
                     switch (storeArea)
                     {
                         case StoreArea.OutputRegister_4X:
-                            result = modbusRtu.PreSetMultiReg(DevAdd, Address, GetUIntArray(SetText));
+                            result = modbusRtu.PreSetMultiReg(slaveAddress, startAddress, GetUIntArray(SetText));
                             break;
                         case StoreArea.OutputCoil_0X:
                         case StoreArea.InputState_1X:
@@ -550,7 +551,7 @@ namespace ModbusTool
                     switch (storeArea)
                     {
                         case StoreArea.OutputRegister_4X:
-                            result = modbusRtu.PreSetMultiReg(DevAdd, Address, GetFloatArray(SetText));
+                            result = modbusRtu.PreSetMultiReg(slaveAddress, startAddress, GetFloatArray(SetText));
                             break;
                         case StoreArea.OutputCoil_0X:
                         case StoreArea.InputState_1X:
@@ -645,5 +646,144 @@ namespace ModbusTool
 
 
         #endregion
+
+        #region Change bytes' sequences
+        private void cmb_DataFormat_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (modbusRtu != null)
+            {
+                modbusRtu.DataFormat = (DAL.DataFormat)Enum.Parse(typeof(DataFormat), cmb_Dataformat.SelectedItem.ToString(), false);
+            }
+        }
+        #endregion
+
+        #region string convert to arrays  
+
+        private bool[] GetBoolArray(string val)
+        {
+            List<bool> Result = new List<bool>();
+            if (val.Contains(' '))
+            {
+                string[] str = Regex.Split(val, "\\s+", RegexOptions.IgnoreCase);
+
+                foreach (var item in str)
+                {
+                    Result.Add(item.ToLower() == "true" || item.ToLower() == "1");
+                }
+            }
+            else
+            {
+                Result.Add(val.ToLower() == "true" || val.ToLower() == "1");
+            }
+
+            return Result.ToArray();
+        }
+
+        private short[] GetShortArray(string val)
+        {
+
+            List<short> Result = new List<short>();
+
+            if (val.Contains(' '))
+            {
+                string[] str = Regex.Split(val, "\\s+", RegexOptions.IgnoreCase);
+
+                foreach (var item in str)
+                {
+                    Result.Add(Convert.ToInt16(item));
+                }
+            }
+            else
+            {
+                Result.Add(Convert.ToInt16(val));
+            }
+
+            return Result.ToArray();
+        }
+
+        private ushort[] GetUShortArray(string val)
+        {
+            List<ushort> Result = new List<ushort>();
+            if (val.Contains(' '))
+            {
+                string[] str = Regex.Split(val, "\\s+", RegexOptions.IgnoreCase);
+
+                foreach (var item in str)
+                {
+                    Result.Add(Convert.ToUInt16(item));
+                }
+            }
+            else
+            {
+                Result.Add(Convert.ToUInt16(val));
+            }
+
+            return Result.ToArray();
+        }
+
+
+        private uint[] GetUIntArray(string val)
+        {
+            List<uint> Result = new List<uint>();
+            if (val.Contains(' '))
+            {
+                string[] str = Regex.Split(val, "\\s+", RegexOptions.IgnoreCase);
+
+                foreach (var item in str)
+                {
+                    Result.Add(Convert.ToUInt32(item));
+                }
+            }
+            else
+            {
+                Result.Add(Convert.ToUInt32(val));
+            }
+
+            return Result.ToArray();
+        }
+
+        private int[] GetIntArray(string val)
+        {
+            List<int> Result = new List<int>();
+            if (val.Contains(' '))
+            {
+                string[] str = Regex.Split(val, "\\s+", RegexOptions.IgnoreCase);
+
+                foreach (var item in str)
+                {
+                    Result.Add(Convert.ToInt32(item));
+                }
+            }
+            else
+            {
+                Result.Add(Convert.ToInt32(val));
+            }
+
+            return Result.ToArray();
+        }
+
+        private float[] GetFloatArray(string val)
+        {
+            List<float> Result = new List<float>();
+            if (val.Contains(' '))
+            {
+                string[] str = Regex.Split(val, "\\s+", RegexOptions.IgnoreCase);
+
+                foreach (var item in str)
+                {
+                    Result.Add(Convert.ToSingle(item));
+                }
+            }
+            else
+            {
+                Result.Add(Convert.ToSingle(val));
+            }
+
+            return Result.ToArray();
+        }
+
+        #endregion
+
+
     }
 }

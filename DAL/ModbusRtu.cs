@@ -27,7 +27,7 @@ namespace DAL
         public int SleepTime { get; set; } = 20;
 
         //data format setting:
-        public DataFormat Data_Format { get; set; } = DataFormat.ABCD;
+        public DataFormat DataFormat { get; set; } = DataFormat.ABCD;
 
         #endregion
 
@@ -256,6 +256,270 @@ namespace DAL
 
         #endregion
 
+        #region 强制单线圈 功能码05H
+
+        public bool ForceCoil(int iDevAdd, int iAddress, bool SetValue)
+        {
+
+            //第一步：拼接报文
+
+            ByteArray SendCommand = new ByteArray();
+
+            SendCommand.Add(new byte[] { (byte)iDevAdd, 0x05, (byte)(iAddress / 256), (byte)(iAddress % 256) });
+            if (SetValue)
+            {
+                SendCommand.Add(new byte[] { 0xFF, 0x00 });
+            }
+            else
+            {
+                SendCommand.Add(new byte[] { 0x00, 0x00 });
+            }
+            SendCommand.Add(Crc16(SendCommand.array, 6));
+
+            //第二步：发送报文  接受报文
+
+            byte[] response = new byte[8];
+
+            if (SendData(SendCommand.array, ref response))
+            {
+                //第三步：验证报文
+                return ByteArrayEquals(SendCommand.array, response);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region 预置单个寄存器 功能码06H
+
+        public bool PreSetSingleReg(int iDevAdd, int iAddress, short SetValue)
+        {
+            //第一步：拼接报文
+
+            ByteArray SendCommand = new ByteArray();
+
+            SendCommand.Add(new byte[] { (byte)iDevAdd, 0x06, (byte)(iAddress / 256), (byte)(iAddress % 256) });
+
+            SendCommand.Add(GetByteArrayFrom16Bit(SetValue));
+
+            SendCommand.Add(Crc16(SendCommand.array, 6));
+
+            //第二步：发送报文  接受报文
+
+            byte[] response = new byte[8];
+
+            if (SendData(SendCommand.array, ref response))
+            {
+                //第三步：验证报文
+                return ByteArrayEquals(SendCommand.array, response);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool PreSetSingleReg(int iDevAdd, int iAddress, ushort SetValue)
+        {
+            //第一步：拼接报文
+
+            ByteArray SendCommand = new ByteArray();
+
+            SendCommand.Add(new byte[] { (byte)iDevAdd, 0x06, (byte)(iAddress / 256), (byte)(iAddress % 256) });
+
+            SendCommand.Add(GetByteArrayFrom16Bit(SetValue));
+
+            SendCommand.Add(Crc16(SendCommand.array, 6));
+
+            //第二步：发送报文  接受报文
+
+            byte[] response = new byte[8];
+
+            if (SendData(SendCommand.array, ref response))
+            {
+                //第三步：验证报文
+                return ByteArrayEquals(SendCommand.array, response);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region force multiple coil function code 0FH
+
+        public bool ForceMultiCoil(int iDevAdd, int iAddress, bool[] SetValue)
+        {
+            //Step 1: concat command
+
+            byte[] iSetValue = BoolArrayToByteArray(SetValue);
+
+            ByteArray SendCommand = new ByteArray();
+
+            SendCommand.Add(new byte[] { (byte)iDevAdd, 0x0F, (byte)(iAddress / 256), (byte)(iAddress % 256) });
+
+            SendCommand.Add(new byte[] { (byte)(SetValue.Length / 256), (byte)(SetValue.Length % 256) });
+
+            SendCommand.Add((byte)iSetValue.Length);
+
+            SendCommand.Add(iSetValue);
+
+            SendCommand.Add(Crc16(SendCommand.array, 7 + iSetValue.Length));
+
+            //Step 2: Send / Receive command
+            byte[] response = new byte[8];
+
+            if (SendData(SendCommand.array, ref response))
+            {
+                // Step 3: Command verification, verify if the first 6 bytes correctly, then verify if CRC correct 
+
+                byte[] b = GetByteArray(response, 0, 6);
+
+                byte[] crc = Crc16(b, 6);
+
+                return ByteArrayEquals(GetByteArray(SendCommand.array, 0, 6), b) && crc[0] == response[6] && crc[1] == response[7];
+
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region 预置多个寄存器 功能码10H
+
+        //浮点型   Int32  UInt32    浮点型数组   Int32数组  UInt32数组  浮点型/int16/uint16
+
+        public bool PreSetMultiByteArray(int iDevAdd, int iAddress, byte[] SetValue)
+        {
+            if (SetValue == null || SetValue.Length == 0 || SetValue.Length % 2 == 1)
+            {
+                return false;
+            }
+
+            int RegLength = SetValue.Length / 2;
+
+            //第一步：拼接报文
+
+            ByteArray SendCommand = new ByteArray();
+
+            SendCommand.Add(new byte[] { (byte)iDevAdd, 0x10, (byte)(iAddress / 256), (byte)(iAddress % 256) });
+
+            //寄存器数量
+            SendCommand.Add(new byte[] { (byte)(RegLength / 256), (byte)(RegLength % 256) });
+
+            //字节数量
+            SendCommand.Add((byte)SetValue.Length);
+
+            //具体字节
+            SendCommand.Add(SetValue);
+
+            //CRC
+            SendCommand.Add(Crc16(SendCommand.array, 7 + SetValue.Length));
+
+            //第二步：发送报文  接受报文
+
+            byte[] response = new byte[8];
+
+            if (SendData(SendCommand.array, ref response))
+            {
+                //第三步：报文验证   验证前6个字节是否正确，再验证CRC是否正确
+
+                byte[] b = GetByteArray(response, 0, 6);
+
+                byte[] crc = Crc16(b, 6);
+
+                return ByteArrayEquals(GetByteArray(SendCommand.array, 0, 6), b) && crc[0] == response[6] && crc[1] == response[7];
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool PreSetMultiReg(int iDevAdd, int iAddress, float SetValue)
+        {
+            return PreSetMultiByteArray(iDevAdd, iAddress, GetByteArrayFrom32Bit(SetValue));
+        }
+
+        public bool PreSetMultiReg(int iDevAdd, int iAddress, int SetValue)
+        {
+            return PreSetMultiByteArray(iDevAdd, iAddress, GetByteArrayFrom32Bit(SetValue));
+        }
+
+        public bool PreSetMultiReg(int iDevAdd, int iAddress, uint SetValue)
+        {
+            return PreSetMultiByteArray(iDevAdd, iAddress, GetByteArrayFrom32Bit(SetValue));
+        }
+
+        public bool PreSetMultiReg(int iDevAdd, int iAddress, float[] SetValue)
+        {
+            ByteArray bSetValue = new ByteArray();
+
+            foreach (float item in SetValue)
+            {
+                bSetValue.Add(GetByteArrayFrom32Bit(item));
+            }
+
+            return PreSetMultiByteArray(iDevAdd, iAddress, bSetValue.array);
+        }
+
+        public bool PreSetMultiReg(int iDevAdd, int iAddress, int[] SetValue)
+        {
+            ByteArray bSetValue = new ByteArray();
+
+            foreach (int item in SetValue)
+            {
+                bSetValue.Add(GetByteArrayFrom32Bit(item));
+            }
+
+            return PreSetMultiByteArray(iDevAdd, iAddress, bSetValue.array);
+        }
+
+        public bool PreSetMultiReg(int iDevAdd, int iAddress, short[] SetValue)
+        {
+            ByteArray bSetValue = new ByteArray();
+
+            foreach (short item in SetValue)
+            {
+                bSetValue.Add(GetByteArrayFrom16Bit(item));
+            }
+
+            return PreSetMultiByteArray(iDevAdd, iAddress, bSetValue.array);
+        }
+
+        public bool PreSetMultiReg(int iDevAdd, int iAddress, uint[] SetValue)
+        {
+            ByteArray bSetValue = new ByteArray();
+
+            foreach (uint item in SetValue)
+            {
+                bSetValue.Add(GetByteArrayFrom32Bit(item));
+            }
+
+            return PreSetMultiByteArray(iDevAdd, iAddress, bSetValue.array);
+        }
+
+        public bool PreSetMultiReg(int iDevAdd, int iAddress, ushort[] SetValue)
+        {
+            ByteArray bSetValue = new ByteArray();
+
+            foreach (ushort item in SetValue)
+            {
+                bSetValue.Add(GetByteArrayFrom16Bit(item));
+            }
+
+            return PreSetMultiByteArray(iDevAdd, iAddress, bSetValue.array);
+        }
+
+
+        #endregion
+
         #region common methods
         private byte[] GetByteArray(byte[] dest, int offset, int count)
         {
@@ -401,8 +665,216 @@ namespace DAL
         }
 
         #endregion
+
+        #region 判断两个数组是否完全一样
+
+        private bool ByteArrayEquals(byte[] b1, byte[] b2)
+        {
+            if (b1 == null || b2 == null) return false;
+            if (b1.Length != b2.Length) return false;
+            for (int i = 0; i < b1.Length; i++)
+            {
+                if (b1[i] != b2[i])
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+
+        #endregion
+
+        #region 布尔数组转换成字节数组
+
+        private byte[] BoolArrayToByteArray(bool[] val)
+        {
+            if (val == null && val.Length == 0) return null;
+
+            int iByteArrLen = 0;
+
+            if (val.Length % 8 == 0)
+            {
+                iByteArrLen = val.Length / 8;
+            }
+            else
+            {
+                iByteArrLen = val.Length / 8 + 1;
+            }
+
+            byte[] result = new byte[iByteArrLen];
+
+            //遍历每个字节
+            for (int i = 0; i < iByteArrLen; i++)
+            {
+                int total = val.Length < 8 * (i + 1) ? val.Length - 8 * i : 8;
+
+                //遍历当前字节的每个位赋值
+                for (int j = 0; j < total; j++)
+                {
+                    result[i] = SetbitValue(result[i], j + 1, val[8 * i + j]);
+                }
+            }
+            return result;
+        }
+
+        #endregion
+
+        #region 16位类型转换成字节数组
+
+        private byte[] GetByteArrayFrom16Bit(short SetValue)
+        {
+            byte[] ResTemp = BitConverter.GetBytes(SetValue);
+            byte[] Res = new byte[2];
+
+            switch (this.DataFormat)
+            {
+                case DataFormat.ABCD:
+                case DataFormat.CDAB:
+                    Res[0] = ResTemp[1];
+                    Res[1] = ResTemp[0];
+                    break;
+                case DataFormat.BADC:
+                case DataFormat.DCBA:
+                    Res = ResTemp;
+                    break;
+                default:
+                    break;
+            }
+            return Res;
+        }
+
+        private byte[] GetByteArrayFrom16Bit(ushort SetValue)
+        {
+            byte[] ResTemp = BitConverter.GetBytes(SetValue);
+            byte[] Res = new byte[2];
+
+            switch (this.DataFormat)
+            {
+                case DataFormat.ABCD:
+                case DataFormat.CDAB:
+                    Res[0] = ResTemp[1];
+                    Res[1] = ResTemp[0];
+                    break;
+                case DataFormat.BADC:
+                case DataFormat.DCBA:
+                    Res = ResTemp;
+                    break;
+                default:
+                    break;
+            }
+            return Res;
+        }
+
+        #endregion
+
+        #region 32位类型转换成字节数组
+
+        private byte[] GetByteArrayFrom32Bit(float SetValue)
+        {
+            byte[] ResTemp = BitConverter.GetBytes(SetValue);
+
+            byte[] Res = new byte[4];
+
+            switch (this.DataFormat)
+            {
+                case DataFormat.ABCD:
+                    Res[0] = ResTemp[3];
+                    Res[1] = ResTemp[2];
+                    Res[2] = ResTemp[1];
+                    Res[3] = ResTemp[0];
+                    break;
+                case DataFormat.CDAB:
+                    Res[0] = ResTemp[1];
+                    Res[1] = ResTemp[0];
+                    Res[2] = ResTemp[3];
+                    Res[3] = ResTemp[2];
+                    break;
+                case DataFormat.BADC:
+                    Res[0] = ResTemp[2];
+                    Res[1] = ResTemp[3];
+                    Res[2] = ResTemp[0];
+                    Res[3] = ResTemp[1];
+                    break;
+                case DataFormat.DCBA:
+                    Res = ResTemp;
+                    break;
+            }
+            return Res;
+        }
+
+        private byte[] GetByteArrayFrom32Bit(int SetValue)
+        {
+            byte[] ResTemp = BitConverter.GetBytes(SetValue);
+
+            byte[] Res = new byte[4];
+
+            switch (this.DataFormat)
+            {
+                case DataFormat.ABCD:
+                    Res[0] = ResTemp[3];
+                    Res[1] = ResTemp[2];
+                    Res[2] = ResTemp[1];
+                    Res[3] = ResTemp[0];
+                    break;
+                case DataFormat.CDAB:
+                    Res[0] = ResTemp[1];
+                    Res[1] = ResTemp[0];
+                    Res[2] = ResTemp[3];
+                    Res[3] = ResTemp[2];
+                    break;
+                case DataFormat.BADC:
+                    Res[0] = ResTemp[2];
+                    Res[1] = ResTemp[3];
+                    Res[2] = ResTemp[0];
+                    Res[3] = ResTemp[1];
+                    break;
+                case DataFormat.DCBA:
+                    Res = ResTemp;
+                    break;
+            }
+            return Res;
+        }
+
+        private byte[] GetByteArrayFrom32Bit(uint SetValue)
+        {
+            byte[] ResTemp = BitConverter.GetBytes(SetValue);
+
+            byte[] Res = new byte[4];
+
+            switch (this.DataFormat)
+            {
+                case DataFormat.ABCD:
+                    Res[0] = ResTemp[3];
+                    Res[1] = ResTemp[2];
+                    Res[2] = ResTemp[1];
+                    Res[3] = ResTemp[0];
+                    break;
+                case DataFormat.CDAB:
+                    Res[0] = ResTemp[1];
+                    Res[1] = ResTemp[0];
+                    Res[2] = ResTemp[3];
+                    Res[3] = ResTemp[2];
+                    break;
+                case DataFormat.BADC:
+                    Res[0] = ResTemp[2];
+                    Res[1] = ResTemp[3];
+                    Res[2] = ResTemp[0];
+                    Res[3] = ResTemp[1];
+                    break;
+                case DataFormat.DCBA:
+                    Res = ResTemp;
+                    break;
+            }
+            return Res;
+        }
+
+
+        #endregion
     }
     #endregion
+
+
 
     // CRC calculation by ChatGPT
 
