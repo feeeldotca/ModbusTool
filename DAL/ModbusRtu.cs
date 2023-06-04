@@ -125,17 +125,17 @@ namespace DAL
         #endregion
 
 
-        #region 读取输入线圈 功能码02H
+        #region Read input coil function code 02H
         /// <summary>
-        /// 读取输入线圈
+        /// Read input coil
         /// </summary>
-        /// <param name="iDevAdd">从站地址</param>
-        /// <param name="iAddress">起始地址</param>
-        /// <param name="iLength">长度</param>
+        /// <param name="iDevAdd">slave Address</param>
+        /// <param name="iAddress">start address</param>
+        /// <param name="iLength">read length</param>
         /// <returns></returns>
         public byte[] ReadInputStatus(int iDevAdd, int iAddress, int iLength)
         {
-            //第一步：拼接报文
+            //Step 1: concat command
 
             ByteArray SendCommand = new ByteArray();
 
@@ -143,7 +143,7 @@ namespace DAL
             SendCommand.Add(new byte[] { (byte)(iLength / 256), (byte)(iLength % 256) });
             SendCommand.Add(Crc16(SendCommand.array, 6));
 
-            //第二步：发送报文  接受报文
+            //Step 2: Send/Receive command
 
             int byteLength = 0;
             if (iLength % 8 == 0)
@@ -159,7 +159,7 @@ namespace DAL
 
             if (SendData(SendCommand.array, ref response))
             {
-                //第三步：解析报文
+                //Step 3: Analyze command
 
                 if (response[1] == 0x02 && response[2] == byteLength)
                 {
