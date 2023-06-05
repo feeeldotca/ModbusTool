@@ -85,7 +85,7 @@ namespace DAL
             //SendCmd[6] = crc[0];
             //SendCmd[7] = crc[1];
 
-            // use ByteArray class to send command
+            // use ByteArray class to send Request
             ByteArray command = new ByteArray();
             command.Add(new byte[]
             {
@@ -97,7 +97,7 @@ namespace DAL
             }) ;
             command.Add(Crc16(command.array, 6));
             byte[] Response = new byte[1024];
-            // send command data to coil address and get response data
+            // send Request data to coil address and get response data
             int byteLength = 0;
             if(iLength % 8 == 0)
             {
@@ -108,7 +108,7 @@ namespace DAL
                 byteLength = iLength / 8 + 1;
             }
 
-            // step 2. Send Command and Read response data from buffer
+            // step 2. Send Request and Read response data from buffer
 
             byte[] response = new byte[byteLength + 5];
             if(SendData(command.array, ref response))
@@ -124,7 +124,6 @@ namespace DAL
         }
         #endregion
 
-
         #region Read input coil function code 02H
         /// <summary>
         /// Read input coil
@@ -135,7 +134,7 @@ namespace DAL
         /// <returns></returns>
         public byte[] ReadInputStatus(int iDevAdd, int iAddress, int iLength)
         {
-            //Step 1: concat command
+            //Step 1: concat Request
 
             ByteArray SendCommand = new ByteArray();
 
@@ -143,7 +142,7 @@ namespace DAL
             SendCommand.Add(new byte[] { (byte)(iLength / 256), (byte)(iLength % 256) });
             SendCommand.Add(Crc16(SendCommand.array, 6));
 
-            //Step 2: Send/Receive command
+            //Step 2: Send/Receive Request
 
             int byteLength = 0;
             if (iLength % 8 == 0)
@@ -159,7 +158,7 @@ namespace DAL
 
             if (SendData(SendCommand.array, ref response))
             {
-                //Step 3: Analyze command
+                //Step 3: Analyze Request
 
                 if (response[1] == 0x02 && response[2] == byteLength)
                 {
@@ -182,7 +181,7 @@ namespace DAL
 
         public byte[] ReadKeepReg(int iDevAdd, int iAddress, int iLength)
         {
-            //Step 1: concatinate send command
+            //Step 1: concatinate send Request
 
             ByteArray SendCommand = new ByteArray();
 
@@ -190,7 +189,7 @@ namespace DAL
             SendCommand.Add(new byte[] { (byte)(iLength / 256), (byte)(iLength % 256) });
             SendCommand.Add(Crc16(SendCommand.array, 6));
 
-            //Step 2: Send / Receive Command
+            //Step 2: Send / Receive Request
 
             int byteLength = iLength * 2;
 
@@ -198,7 +197,7 @@ namespace DAL
 
             if (SendData(SendCommand.array, ref response))
             {
-                //Step 3: analize command
+                //Step 3: analize Request
 
                 if (response[1] == 0x03 && response[2] == byteLength)
                 {
@@ -217,11 +216,11 @@ namespace DAL
 
         #endregion
 
-        #region Read Input Register Function code 04H
+        #region Read Input Registers Function code 04H
 
         public byte[] ReadInputReg(int iDevAdd, int iAddress, int iLength)
         {
-            // Step 1: concatinate send command
+            // Step 1: concatinate send Request
 
             ByteArray SendCommand = new ByteArray();
 
@@ -229,7 +228,7 @@ namespace DAL
             SendCommand.Add(new byte[] { (byte)(iLength / 256), (byte)(iLength % 256) });
             SendCommand.Add(Crc16(SendCommand.array, 6));
 
-            //Step 2: Send / Receive Command
+            //Step 2: Send / Receive Request
 
             int byteLength = iLength * 2;
 
@@ -237,7 +236,7 @@ namespace DAL
 
             if (SendData(SendCommand.array, ref response))
             {
-                //Step 3: analize command
+                //Step 3: analize Request
 
                 if (response[1] == 0x04 && response[2] == byteLength)
                 {
@@ -256,12 +255,12 @@ namespace DAL
 
         #endregion
 
-        #region 强制单线圈 功能码05H
+        #region Write Single Coil function code 05H
 
         public bool ForceCoil(int iDevAdd, int iAddress, bool SetValue)
         {
 
-            //第一步：拼接报文
+            //Step 1: concatinate send Request
 
             ByteArray SendCommand = new ByteArray();
 
@@ -276,13 +275,13 @@ namespace DAL
             }
             SendCommand.Add(Crc16(SendCommand.array, 6));
 
-            //第二步：发送报文  接受报文
+            //Step 2: Send / Receive Request
 
             byte[] response = new byte[8];
 
             if (SendData(SendCommand.array, ref response))
             {
-                //第三步：验证报文
+                //Step 3: analize Request
                 return ByteArrayEquals(SendCommand.array, response);
             }
             else
@@ -293,11 +292,11 @@ namespace DAL
 
         #endregion
 
-        #region 预置单个寄存器 功能码06H
+        #region Write Single Register Function code 06H
 
         public bool PreSetSingleReg(int iDevAdd, int iAddress, short SetValue)
         {
-            //第一步：拼接报文
+            //Step 1: concatinate Request
 
             ByteArray SendCommand = new ByteArray();
 
@@ -307,13 +306,13 @@ namespace DAL
 
             SendCommand.Add(Crc16(SendCommand.array, 6));
 
-            //第二步：发送报文  接受报文
+            //Step 2: Send / Receive Request
 
             byte[] response = new byte[8];
 
             if (SendData(SendCommand.array, ref response))
             {
-                //第三步：验证报文
+                //Step 3: analize Request
                 return ByteArrayEquals(SendCommand.array, response);
             }
             else
@@ -324,7 +323,7 @@ namespace DAL
 
         public bool PreSetSingleReg(int iDevAdd, int iAddress, ushort SetValue)
         {
-            //第一步：拼接报文
+            //Step 1: concatinate Request
 
             ByteArray SendCommand = new ByteArray();
 
@@ -334,13 +333,13 @@ namespace DAL
 
             SendCommand.Add(Crc16(SendCommand.array, 6));
 
-            //第二步：发送报文  接受报文
+            //Step 2: Send / Receive Request
 
             byte[] response = new byte[8];
 
             if (SendData(SendCommand.array, ref response))
             {
-                //第三步：验证报文
+                //Step 3: analize Request
                 return ByteArrayEquals(SendCommand.array, response);
             }
             else
@@ -351,11 +350,11 @@ namespace DAL
 
         #endregion
 
-        #region force multiple coil function code 0FH
+        #region write(Force) multiple coils function code 0FH
 
         public bool ForceMultiCoil(int iDevAdd, int iAddress, bool[] SetValue)
         {
-            //Step 1: concat command
+            //Step 1: concat Request
 
             byte[] iSetValue = BoolArrayToByteArray(SetValue);
 
@@ -371,12 +370,12 @@ namespace DAL
 
             SendCommand.Add(Crc16(SendCommand.array, 7 + iSetValue.Length));
 
-            //Step 2: Send / Receive command
+            //Step 2: Send / Receive Request
             byte[] response = new byte[8];
 
             if (SendData(SendCommand.array, ref response))
             {
-                // Step 3: Command verification, verify if the first 6 bytes correctly, then verify if CRC correct 
+                // Step 3: Request verification, verify if the first 6 bytes correctly, then verify if CRC correct 
 
                 byte[] b = GetByteArray(response, 0, 6);
 
@@ -391,9 +390,9 @@ namespace DAL
 
         #endregion
 
-        #region 预置多个寄存器 功能码10H
+        #region Write multiple registers function code 10H
 
-        //浮点型   Int32  UInt32    浮点型数组   Int32数组  UInt32数组  浮点型/int16/uint16
+        //float   Int32  UInt32    array of float   array of Int32   array of UInt32   float/int16/uint16
 
         public bool PreSetMultiByteArray(int iDevAdd, int iAddress, byte[] SetValue)
         {
@@ -404,31 +403,31 @@ namespace DAL
 
             int RegLength = SetValue.Length / 2;
 
-            //第一步：拼接报文
+            //Step 1: concatinate Request
 
             ByteArray SendCommand = new ByteArray();
 
             SendCommand.Add(new byte[] { (byte)iDevAdd, 0x10, (byte)(iAddress / 256), (byte)(iAddress % 256) });
 
-            //寄存器数量
+            //number of registers
             SendCommand.Add(new byte[] { (byte)(RegLength / 256), (byte)(RegLength % 256) });
 
-            //字节数量
+            //number of btyes
             SendCommand.Add((byte)SetValue.Length);
 
-            //具体字节
+            //bytes requested in request
             SendCommand.Add(SetValue);
 
             //CRC
             SendCommand.Add(Crc16(SendCommand.array, 7 + SetValue.Length));
 
-            //第二步：发送报文  接受报文
+            //Step 2: Send / Receive Request
 
             byte[] response = new byte[8];
 
             if (SendData(SendCommand.array, ref response))
             {
-                //第三步：报文验证   验证前6个字节是否正确，再验证CRC是否正确
+                //Step 3: Verify Request: verify if the first 6 bytes are correct, then verify if CRC is correct
 
                 byte[] b = GetByteArray(response, 0, 6);
 
@@ -538,10 +537,10 @@ namespace DAL
             }
         }
 
-        // step 1. Send command to coil address
+        // step 1. Send Request to coil address
         private bool SendData(byte[] cmd, ref byte[] res)
         {
-            // Send command to coil address
+            // Send Request to coil address
             
             try{
                 
@@ -666,8 +665,7 @@ namespace DAL
 
         #endregion
 
-        #region 判断两个数组是否完全一样
-
+        #region Check if 2 arrays are identical 
         private bool ByteArrayEquals(byte[] b1, byte[] b2)
         {
             if (b1 == null || b2 == null) return false;
@@ -685,7 +683,7 @@ namespace DAL
 
         #endregion
 
-        #region 布尔数组转换成字节数组
+        #region convert array of bool to array of bytes
 
         private byte[] BoolArrayToByteArray(bool[] val)
         {
@@ -704,12 +702,12 @@ namespace DAL
 
             byte[] result = new byte[iByteArrLen];
 
-            //遍历每个字节
+            //iterate thru each byte
             for (int i = 0; i < iByteArrLen; i++)
             {
                 int total = val.Length < 8 * (i + 1) ? val.Length - 8 * i : 8;
 
-                //遍历当前字节的每个位赋值
+                //iterate each bit of current byte and set value
                 for (int j = 0; j < total; j++)
                 {
                     result[i] = SetbitValue(result[i], j + 1, val[8 * i + j]);
@@ -720,7 +718,19 @@ namespace DAL
 
         #endregion
 
-        #region 16位类型转换成字节数组
+        #region Set bit value in byte
+
+        private byte SetbitValue(byte data, int index, bool val)
+        {
+            if (index > 8 || index < 1)
+                return 0;
+            int v = index < 2 ? index : (2 << (index - 2));
+            return val ? (byte)(data | v) : (byte)(data & ~v);
+        }
+
+        #endregion
+
+        #region 16bit type convert to array of bytes 
 
         private byte[] GetByteArrayFrom16Bit(short SetValue)
         {
@@ -768,7 +778,7 @@ namespace DAL
 
         #endregion
 
-        #region 32位类型转换成字节数组
+        #region 32 bit type convert to array of bytes 
 
         private byte[] GetByteArrayFrom32Bit(float SetValue)
         {
